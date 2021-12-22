@@ -20,7 +20,7 @@ DBNAME = "sbom.db"
 
 class SBOMDB:
     """
-    Manages SBON data in a database.
+    Manages SBOM data in a database.
     """
 
     LOGGER = LOGGER.getChild("SBOMDB")
@@ -110,10 +110,10 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT * FROM sbom_file
+        SELECT filename, description FROM sbom_file
         """
         list_module = """
-        SELECT * FROM sbom_data
+        SELECT vendor, product, version FROM sbom_data
         """
         list_all = """
         SELECT filename, description, vendor, product, version

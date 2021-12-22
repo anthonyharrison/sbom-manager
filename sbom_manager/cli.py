@@ -15,6 +15,7 @@ from collections import ChainMap
 
 from sbom_manager.db import SBOMDB
 from sbom_manager.log import LOGGER
+from sbom_manager.output import SBOMOutput
 from sbom_manager.version import VERSION
 
 
@@ -143,7 +144,8 @@ def main(argv=None):
     else:
         desc = args["description"]
 
-    # TODO Add output handlier
+    # Add output handler
+    sbom_output = SBOMOutput(args["output_file"])
 
     # Do something
     if args["init"]:
@@ -162,28 +164,18 @@ def main(argv=None):
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
-        print("Filename      Description   Vendor   Product   Version")
-        print("=" * 30)
-        for entry in sbom_db.find_module(args["module"]):
-            print(entry[0], entry[1], entry[2], entry[3], entry[4])
+        sbom_output.set_headings(["Filename","Description","Vendor","Product","Version"])
+        sbom_output.generate_output(sbom_db.find_module(args["module"]))
     elif args["list"]:
         # List contents of database
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
-            print("Filename      Description")
-            print("=" * 30)
-            for entry in sbom_db.list_entries(args["list"]):
-                print(entry[1], entry[2])
+            sbom_output.set_headings(["Filename","Description"])
         elif args["list"] == "module":
-            print("Vendor   Product   Version")
-            print("=" * 30)
-            for entry in sbom_db.list_entries(args["list"]):
-                print(entry[1], entry[2], entry[3])
+            sbom_output.set_headings(["Vendor","Product","Version"])
         else:
-            print("Filename      Description   Vendor   Product   Version")
-            print("=" * 30)
-            for entry in sbom_db.list_entries(args["list"]):
-                print(entry[0], entry[1], entry[2], entry[3], entry[4])
+            sbom_output.set_headings(["Filename","Description","Vendor","Product","Version"])
+        sbom_output.generate_output(sbom_db.list_entries(args["list"]))
     elif args["scan"]:
         # Scan for vulnerabilities
         LOGGER.info("Scan system for vulnerabilities")
