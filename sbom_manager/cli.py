@@ -14,6 +14,7 @@ import textwrap
 from collections import ChainMap
 
 from sbom_manager.db import SBOMDB
+from sbom_manager.input import SBOMInput
 from sbom_manager.log import LOGGER
 from sbom_manager.output import SBOMOutput
 from sbom_manager.version import VERSION
@@ -46,6 +47,13 @@ def main(argv=None):
         default="",
         dest="add_file",
         help="add SBOM filename",
+    )
+    input_group.add_argument(
+        "-t",
+        "--sbom-type",
+        action="store",
+        choices=["spdx", "cyclonedx", "csv"],
+        help="SBOM file type",
     )
     input_group.add_argument(
         "-l",
@@ -90,7 +98,7 @@ def main(argv=None):
         "-f",
         "--format",
         action="store",
-        choices=["csv", "console", "pdf"],
+        choices=["csv", "console"],
         help="update output format (default: console)",
     )
 
@@ -104,14 +112,14 @@ def main(argv=None):
 
     defaults = {
         "add_file": "",
+        "sbom_type": "",
         "module": "",
         "list": "all",
         "description": "",
-        "quiet": False,
         "log_level": "info",
         "format": "console",
         "quiet": False,
-        "output_file": "",
+        "output_file": "console",
         "init": False,
     }
 
@@ -136,16 +144,18 @@ def main(argv=None):
     # Connect to the database
     sbom_db = SBOMDB()
 
-    # TODO Database validation
-
     # Add Input validation
     if args["add_file"] and not args["description"]:
         desc = "Not specified"
     else:
         desc = args["description"]
+    if args["add_file"] and not args["sbom_type"]:
+        LOGGER.info("SBOM type not specified")
+        return -1
+    sbom_input = SBOMInput(args["sbom_type"])
 
     # Add output handler
-    sbom_output = SBOMOutput(args["output_file"])
+    sbom_output = SBOMOutput(args["output_file"], args["format"])
 
     # Do something
     if args["init"]:
@@ -155,26 +165,30 @@ def main(argv=None):
     elif args["add_file"]:
         # Process SBOM file
         LOGGER.debug(f"Add SBOM {args['add_file']}")
-        sbom_data = [
-            {"vendor": "apache", "product": "log4j", "version": "2.14.2"},
-            {"vendor": "oracle", "product": "mysql", "version": "5.0.45"},
-        ]
-        # And add to database
-        sbom_db.add_file(args["add_file"], desc, sbom_data)
+        sbom_data = sbom_input.process_file(args["add_file"])
+        if sbom_data is not None:
+            # And add to database
+            sbom_db.add_file(args["add_file"], desc, args["sbom_type"], sbom_data)
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
-        sbom_output.set_headings(["Filename","Description","Vendor","Product","Version"])
+        sbom_output.set_headings(
+            ["Filename", "Description", "Vendor", "Product", "Version"]
+        )
         sbom_output.generate_output(sbom_db.find_module(args["module"]))
     elif args["list"]:
         # List contents of database
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
-            sbom_output.set_headings(["Filename","Description"])
+            sbom_output.set_headings(
+                ["Filename", "Description", "SBOM Type", "Date Added"]
+            )
         elif args["list"] == "module":
-            sbom_output.set_headings(["Vendor","Product","Version"])
+            sbom_output.set_headings(["Vendor", "Product", "Version"])
         else:
-            sbom_output.set_headings(["Filename","Description","Vendor","Product","Version"])
+            sbom_output.set_headings(
+                ["Filename", "Description", "Vendor", "Product", "Version"]
+            )
         sbom_output.generate_output(sbom_db.list_entries(args["list"]))
     elif args["scan"]:
         # Scan for vulnerabilities

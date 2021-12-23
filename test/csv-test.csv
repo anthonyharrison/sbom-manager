@@ -1,0 +1,7 @@
+# Test CSV file
+# Format is vendor, product, version
+apache, tomcat, 7.0.76
+oracle, java, 1.8
+# Infrastructure
+microsoft, windows, 2020H2
+

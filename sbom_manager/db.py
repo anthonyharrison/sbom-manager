@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 """
-Management of access for database
+Management of access to database
 """
 
+import datetime
 import logging
 import os
 import sqlite3
@@ -23,13 +24,12 @@ class SBOMDB:
     Manages SBOM data in a database.
     """
 
-    LOGGER = LOGGER.getChild("SBOMDB")
-
     def __init__(self):
 
         # set up the db path
         self.dbpath = os.path.join(DISK_LOCATION_DEFAULT, DBNAME)
-        self.LOGGER.debug(f"Database location {self.dbpath}")
+        self.logger = LOGGER.getChild(self.__class__.__name__)
+        LOGGER.debug(f"Database location {self.dbpath}")
         self.connection = None
 
     def initialise_database(self):
@@ -41,7 +41,9 @@ class SBOMDB:
         CREATE TABLE sbom_file (
             file_id INTEGER PRIMARY KEY,
             filename TEXT NOT NULL,
-            description TEXT
+            description TEXT,
+            sbom_type TEXT,
+            add_date TIMESTAMP
         )
         """
         sbom_data_create = """
@@ -58,9 +60,10 @@ class SBOMDB:
         cursor.execute("DROP TABLE IF EXISTS sbom_data")
         cursor.execute(file_data_create)
         cursor.execute(sbom_data_create)
+        LOGGER.debug("Database initialised")
         self.connection.commit()
 
-    def add_file(self, filename, description, sbom_data):
+    def add_file(self, filename, description, sbom_type, sbom_data):
         """Function that populates the database with SBOM file"""
         self.db_open()
         cursor = self.connection.cursor()
@@ -68,9 +71,11 @@ class SBOMDB:
         insert_file = """
         INSERT or REPLACE INTO sbom_file(
             filename,
-            description
+            description,
+            sbom_type,
+            add_date
         )
-        VALUES (?, ?)
+        VALUES (?, ?, ?, ?)
         """
         insert_sbom = """
         INSERT or REPLACE INTO sbom_data(
@@ -82,18 +87,27 @@ class SBOMDB:
         VALUES (?, ?, ?, ?)
         """
         # Insert file entry
-        cursor.execute(insert_file, [filename, description])
+        cursor.execute(
+            insert_file,
+            [
+                os.path.basename(filename),
+                description,
+                sbom_type,
+                datetime.datetime.now().strftime("%H:%M:%S %d-%b-%Y"),
+            ],
+        )
         # Find id of last entry to reference with SBOM data
-        id = cursor.lastrowid
+        file_id = cursor.lastrowid
         # Insert SBOM data records
         for data in sbom_data:
             cursor.execute(
-                insert_sbom, [id, data["vendor"], data["product"], data["version"]]
+                insert_sbom, [file_id, data["vendor"], data["product"], data["version"]]
             )
         self.connection.commit()
         self.db_close()
 
     def find_module(self, module):
+        """Function that searches for module in database"""
         self.db_open()
         cursor = self.connection.cursor()
         find_module_query = """
@@ -107,10 +121,11 @@ class SBOMDB:
         return results
 
     def list_entries(self, contents):
+        """Function that extracts entries from database """
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT filename, description FROM sbom_file
+        SELECT filename, description, sbom_type, add_date FROM sbom_file
         """
         list_module = """
         SELECT vendor, product, version FROM sbom_data
@@ -137,9 +152,11 @@ class SBOMDB:
 
         if not self.connection:
             self.connection = sqlite3.connect(self.dbpath)
+            LOGGER.debug("Database opened")
 
     def db_close(self):
         """Closes connection to sqlite database."""
         if self.connection:
             self.connection.close()
             self.connection = None
+            LOGGER.debug("Database closed")

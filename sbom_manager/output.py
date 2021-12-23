@@ -3,30 +3,65 @@
 
 """ Set up Output Formatting """
 
+from sbom_manager.log import LOGGER
+
+
+class OutputManager:
+    """ Helper class for managing output to file and console. """
+    def __init__(self, out_type="file", filename=None):
+        self.out_type = out_type
+        self.filename = filename
+        if self.out_type == "file":
+            self.file_handle = open(filename, "w")
+        else:
+            self.file_handle = None
+
+    def close(self):
+        if self.out_type == "file":
+            self.file_handle.close()
+
+    def file_out(self, message):
+        self.file_handle.write(message + "\n")
+
+    def console_out(self, message):
+        print(message)
+
+    def show(self, message):
+        if self.out_type == "file":
+            self.file_out(message)
+        else:
+            self.console_out(message)
+
 
 class SBOMOutput:
-    """
-    Output manager for SBOM data.
-    """
+    """ Output manager for SBOM data. """
 
-    WIDTH = 15
+    WIDTH = 20
     PADDING = " "
 
-    def __init__(self, destination=None):
-        self.destination = destination
+    def __init__(self, filename="console", output_format="console"):
+        self.filename = filename
         self.headings = None
+        self.logger = LOGGER.getChild(self.__class__.__name__)
+        self.output_format = output_format
+        self.format_process = {
+            "console": self.format_data,
+            "csv": self.format_csv_data,
+        }
+        self.type = "console"
+        if self.filename != "console":
+            self.type = "file"
+        self.output_manager = OutputManager(self.type, self.filename)
 
     def set_headings(self, headings):
-        # Headings to be used in output
-        # Headings is a list of fields
+        # Headings to be used in output. Headings are a list of fields
         self.headings = headings
 
     def format_element(self, element):
-        # if element larger than maximum width
+        # If element larger than maximum width, curtail element and add '...'
         if len(element) > self.WIDTH:
             return element[: self.WIDTH - 3] + "..."
-        else:
-            return element
+        return element
 
     def format_data(self, data):
         # Return formatted line
@@ -39,18 +74,23 @@ class SBOMOutput:
             )
         return formatted_data
 
-    def console_output(self, data):
-        # Send output to console
-        print(data)
+    def format_csv_data(self, data):
+        # Return csv formatted line
+        formatted_data = ""
+        for entry in data:
+            formatted_data = formatted_data + entry + ","
+        # Don't return last character (extra ,)
+        return formatted_data[:-1]
 
-    def csv_output(self, data):
-        # Send output to csv file
-        pass
+    def send_output(self, data):
+        self.output_manager.show(data)
 
     def generate_output(self, dataset):
         if self.headings is not None:
-            hdr = self.format_data(self.headings)
-            self.console_output(hdr)
-            self.console_output("=" * len(hdr))
-        for d in dataset:
-            self.console_output(self.format_data(d))
+            hdr = self.format_process[self.output_format](self.headings)
+            self.send_output(hdr)
+            if self.output_format == "console":
+                self.send_output("=" * len(hdr))
+        for data_item in dataset:
+            self.send_output(self.format_process[self.output_format](data_item))
+        self.output_manager.close()
