@@ -41,6 +41,7 @@ class SBOMDB:
         CREATE TABLE sbom_file (
             file_id INTEGER PRIMARY KEY,
             filename TEXT NOT NULL,
+            project TEXT,
             description TEXT,
             sbom_type TEXT,
             add_date TIMESTAMP
@@ -63,7 +64,7 @@ class SBOMDB:
         LOGGER.debug("Database initialised")
         self.connection.commit()
 
-    def add_file(self, filename, description, sbom_type, sbom_data):
+    def add_file(self, filename, description, project, sbom_type, sbom_data):
         """Function that populates the database with SBOM file"""
         self.db_open()
         cursor = self.connection.cursor()
@@ -71,11 +72,12 @@ class SBOMDB:
         insert_file = """
         INSERT or REPLACE INTO sbom_file(
             filename,
+            project,
             description,
             sbom_type,
             add_date
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
         """
         insert_sbom = """
         INSERT or REPLACE INTO sbom_data(
@@ -91,6 +93,7 @@ class SBOMDB:
             insert_file,
             [
                 os.path.basename(filename),
+                project,
                 description,
                 sbom_type,
                 datetime.datetime.now().strftime("%H:%M:%S %d-%b-%Y"),
@@ -106,16 +109,21 @@ class SBOMDB:
         self.connection.commit()
         self.db_close()
 
-    def find_module(self, module):
+    def find_module(self, module, project):
         """Function that searches for module in database"""
         self.db_open()
         cursor = self.connection.cursor()
         find_module_query = """
-        SELECT filename, description, vendor, product, version
+        SELECT filename, project, description, vendor, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product = ?
         """
-        cursor.execute(find_module_query, [module])
+        query_params = [module]
+        # Handle optional project parameter
+        if project != "":
+            query_params.append(project)
+            find_module_query = find_module_query + " AND project = ?"
+        cursor.execute(find_module_query, query_params)
         results = cursor.fetchall()
         self.db_close()
         return results
@@ -125,13 +133,13 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT filename, description, sbom_type, add_date FROM sbom_file
+        SELECT filename, project, description, sbom_type, add_date FROM sbom_file
         """
         list_module = """
         SELECT vendor, product, version FROM sbom_data
         """
         list_all = """
-        SELECT filename, description, vendor, product, version
+        SELECT filename, project, description, vendor, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """

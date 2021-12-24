@@ -46,7 +46,7 @@ def main(argv=None):
         action="store",
         default="",
         dest="add_file",
-        help="add SBOM filename",
+        help="SBOM file to be added",
     )
     input_group.add_argument(
         "-t",
@@ -73,17 +73,24 @@ def main(argv=None):
         help="Description of SBOM file",
     )
     input_group.add_argument(
-        "-s", "--scan", action="store_true", help="scan SBOMs for vulnerabilities"
+        "-p",
+        "--project",
+        action="store",
+        default="",
+        help="Project name",
+    )
+    input_group.add_argument(
+        "-s", "--scan", action="store_true", help="Scan SBOMs for vulnerabilities"
     )
 
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
-        "-q", "--quiet", action="store_true", help="suppress output"
+        "-q", "--quiet", action="store_true", help="Suppress output"
     )
     output_group.add_argument(
         "-L",
         "--log",
-        help="log level (default: info)",
+        help="Log level (default: info)",
         dest="log_level",
         action="store",
         choices=["debug", "info", "warning", "error", "critical"],
@@ -92,21 +99,21 @@ def main(argv=None):
         "-o",
         "--output-file",
         action="store",
-        help="provide output filename (default: output to stdout)",
+        help="Output filename (default: output to stdout)",
     )
     output_group.add_argument(
         "-f",
         "--format",
         action="store",
         choices=["csv", "console"],
-        help="update output format (default: console)",
+        help="Output format (default: console)",
     )
 
     parser.add_argument(
-        "-C", "--config", action="store", default="", help="provide config file"
+        "-C", "--config", action="store", default="", help="Name of config file"
     )
     parser.add_argument(
-        "-I", "--init", action="store_true", help="initialise SBOM manager"
+        "-I", "--initialise", action="store_true", help="Initialise SBOM manager"
     )
     parser.add_argument("-V", "--version", action="version", version=VERSION)
 
@@ -116,11 +123,12 @@ def main(argv=None):
         "module": "",
         "list": "all",
         "description": "",
+        "project": "",
         "log_level": "info",
         "format": "console",
         "quiet": False,
         "output_file": "console",
-        "init": False,
+        "initialise": False,
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -153,12 +161,15 @@ def main(argv=None):
         LOGGER.info("SBOM type not specified")
         return -1
     sbom_input = SBOMInput(args["sbom_type"])
+    if args["add_file"] and not args["project"]:
+        LOGGER.info("Project name not specified")
+        return -1
 
     # Add output handler
     sbom_output = SBOMOutput(args["output_file"], args["format"])
 
     # Do something
-    if args["init"]:
+    if args["initialise"]:
         # Initialise everything
         LOGGER.debug("Initialise system")
         sbom_db.initialise_database()
@@ -168,26 +179,26 @@ def main(argv=None):
         sbom_data = sbom_input.process_file(args["add_file"])
         if sbom_data is not None:
             # And add to database
-            sbom_db.add_file(args["add_file"], desc, args["sbom_type"], sbom_data)
+            sbom_db.add_file(args["add_file"], desc, args["project"], args["sbom_type"], sbom_data)
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
         sbom_output.set_headings(
-            ["Filename", "Description", "Vendor", "Product", "Version"]
+            ["Filename", "Project", "Description", "Vendor", "Product", "Version"]
         )
-        sbom_output.generate_output(sbom_db.find_module(args["module"]))
+        sbom_output.generate_output(sbom_db.find_module(args["module"], args["project"]))
     elif args["list"]:
         # List contents of database
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
             sbom_output.set_headings(
-                ["Filename", "Description", "SBOM Type", "Date Added"]
+                ["Filename", "Project", "Description", "SBOM Type", "Date Added"]
             )
         elif args["list"] == "module":
             sbom_output.set_headings(["Vendor", "Product", "Version"])
         else:
             sbom_output.set_headings(
-                ["Filename", "Description", "Vendor", "Product", "Version"]
+                ["Filename", "Project", "Description", "Vendor", "Product", "Version"]
             )
         sbom_output.generate_output(sbom_db.list_entries(args["list"]))
     elif args["scan"]:
