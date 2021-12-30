@@ -4,7 +4,7 @@ The SBOM Manager is a free, open source tool to help you manage a collection of 
 
 The tool has two main modes of operation:
 
-1. A repository which maintains the set of components which have been included as part of a release of  a sogftware product.
+1. A repository which maintains the set of components which have been included as part of a release of  a software product.
 2. Tools for quering the inclusion of specific products in a project development to answer some commmon use cases.
 
 It is intended to be used as part of a continuous integration system to enable regular records of SBOMs to be maintained 
@@ -18,11 +18,11 @@ The tool requires Python 3 (3.7+).
 
 ## Usage
 
-`usage: pyhton sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
-                    [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
-                    [-p PROJECT] [-s] [-q]
-                    [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
-                    [-f {csv,console}] [-C CONFIG] [-I] [-V]`
+`python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
+                [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
+                [-p PROJECT] [-s] [-q]
+                [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
+                [-f {csv,console}] [-C CONFIG] [-I] [-V]
 
 The SBOM Manager manages SBOMs (Software Bill of Materials) to allow
 searching for modules and scanning for vulnerabilities.
@@ -56,7 +56,7 @@ Output:
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         Output filename (default: output to stdout)
   -f {csv,console}, --format {csv,console}
-                        Output format (default: console)
+                        Output format (default: console)`
 						
 ## Operation
 
@@ -71,7 +71,7 @@ Once a repository is created, SBOM files need to be added. The following types o
   - SPDX (Tag/Value format compatible with version SPDX 2.2).
   - CycloneDX (XML format).
   - CSV where the file is a set of lines containing vendor, product, version entries.
-  - DIR which is a directory listing of filenames. 
+  - DIR which is a file containing a directory listing of filenames. To create a directory file, the following command can be used `find . -type f > <filename>`
 
 The type of SBOM to be added is specified using the `--type` parameter. 
 
@@ -85,7 +85,7 @@ Invalid entries in an SBOM file will be silently ignored although specifying `--
 The `--module` option is used to query the repostiry for the existence of a particular module. This may optionally be filtered by project name. The
 name of the module is assumed to be wildcard so that a search for a module called 'lib' will find all modules which contain the sequence 'lib'.
 
-Note that the `--scan` option does not do anything currently. 
+Note that the `--scan` and `--config` options do not do anything currently. 
 
 ## Licence
 
@@ -95,7 +95,7 @@ Licenced under the MIT Licence
 
 This tool is meant to support software development and security audit functions. However the usefulness of the tool is dependent on the SBOM data
 which is provided to the tool. Unfortunately, the tool is unable to determine the validity or completeness of such a SBOM file; users of the tool
-are therefore reminded that they should assert the quality of the data before adding any data to the tool 
+are therefore reminded that they should assert the quality of the data before adding any data to the tool. 
 
 ## Use Cases
 
@@ -104,7 +104,7 @@ Typical use cases for the tool are:
   - Is my organisation impacted by vulnerability Z with component X?
   - Does my project use version X of component Y?
   - What version(s) of component Y is being used?
-  - What vulnerabilities exist within my product? And what needs to be fixed
+  - What vulnerabilities exist within my product? And what needs to be fixed?
 
 Is my organisation impacted by vulnerability Z with component X?
 
@@ -112,13 +112,13 @@ Is my organisation impacted by vulnerability Z with component X?
 
 Does my project use version X of component Y?
 
-`python sbom.py –p <project name> -m <product name> | grep <version>
+`python sbom.py –p <project name> -m <product name> | grep <version>`
 
 What version(s) of component Y is being used?
 
-`python sbom.py –p <project name> -m <product name>
+`python sbom.py –p <project name> -m <product name>`
 
-What vulnerabilities exist within my product? And what needs to be fixed
+What vulnerabilities exist within my product? And what needs to be fixed?
 
 `python sbom.py –p <project name> --scan`
 
