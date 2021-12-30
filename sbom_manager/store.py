@@ -51,7 +51,7 @@ class SBOMStore:
                 project_list.append(file_path)
         # Return list of files
         return project_list
-        
+
     def initialise_store(self):
         for file_path in os.listdir(DISK_LOCATION_DEFAULT):
             full_path = os.path.join(DISK_LOCATION_DEFAULT, file_path)
@@ -60,4 +60,4 @@ class SBOMStore:
             if not file_path.startswith('.') and os.path.isdir(full_path):
                 LOGGER.debug(f"Deleting project directory {file_path}")
                 shutil.rmtree(full_path)
-      
+

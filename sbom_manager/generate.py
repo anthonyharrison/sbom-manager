@@ -13,7 +13,7 @@ class SBOMGenerator:
 
     def __init__(self):
 		pass
-		
+
 	def generate_spdx(self,filename):
 		pass
 

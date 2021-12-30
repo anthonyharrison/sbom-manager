@@ -169,7 +169,7 @@ def main(argv=None):
 
     # Add output handler
     sbom_output = SBOMOutput(args["output_file"], args["format"])
-    
+
     # Setup store manager
     sbom_store = SBOMStore()
 
@@ -214,8 +214,11 @@ def main(argv=None):
         # Scan for vulnerabilities
         LOGGER.info("Scan system for vulnerabilities")
         project_files = sbom_store.get_project(args['project'])
-        get_filename = sbom_store.get_file(project_files[-1], args['project'])
-        LOGGER.info(f"Scan {get_filename}")
-        svon_scan = SBOMScanner(get_filename)
-        sbom_scan.scan()
+        # Check that files exist for project
+        if len(project_files) > 0:
+            # Only scan latest file
+            get_filename = sbom_store.get_file(project_files[-1], args['project'])
+            LOGGER.info(f"Scan {get_filename}")
+            svon_scan = SBOMScanner(get_filename)
+            sbom_scan.scan()
     return 0
