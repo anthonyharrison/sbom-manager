@@ -16,7 +16,7 @@ and also to support security audit needs to determine if a particular component 
 
 To install, just clone the repo and install dependencies using the following command
 
-`pip install -U -r requirements.txt'
+`pip install -U -r requirements.txt`
 
 The tool requires Python 3 (3.7+). It is recommended to use a virtual python environment especially 
 if you are using different versions of python. `virtualenv` is a tool for setting up virtual python environments which
@@ -25,11 +25,11 @@ up for testing using different versions of Python.
 
 ## Usage
 
-```python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
+`python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
                 [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
                 [-p PROJECT] [-s] [-q]
                 [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
-                [-f {csv,console}] [-C CONFIG] [-I] [-V]```
+                [-f {csv,console}] [-C CONFIG] [-I] [-V]`
 
 The SBOM Manager manages SBOMs (Software Bill of Materials) to allow
 searching for modules and scanning for vulnerabilities.
