@@ -4,5 +4,4 @@ pytest
 pytest-xdist
 pytest-cov
 pytest-asyncio
-reportlab
 defusedxml
