@@ -219,6 +219,6 @@ def main(argv=None):
             # Only scan latest file
             get_filename = sbom_store.get_file(project_files[-1], args['project'])
             LOGGER.info(f"Scan {get_filename}")
-            svon_scan = SBOMScanner(get_filename)
+            sbom_scan = SBOMScanner(get_filename)
             sbom_scan.scan()
     return 0
