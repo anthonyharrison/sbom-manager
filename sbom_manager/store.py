@@ -1,0 +1,63 @@
+# Copyright (C) 2021 Anthony Harrison
+# SPDX-License-Identifier: MIT
+
+""" Set up File Storage """
+
+import os.path
+import shutil
+
+from sbom_manager.log import LOGGER
+
+# File store defaults
+DISK_LOCATION_DEFAULT = os.path.join(os.path.expanduser("~"), ".cache", "sbom_manager")
+
+
+class SBOMStore:
+    """
+    File storage management for SBOM data.
+    """
+
+    def __init__(self):
+        self.logger = LOGGER.getChild(self.__class__.__name__)
+
+    def store(self, filename, project):
+        # Check project store exists. If not create it
+        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        if not os.path.isdir(project_location):
+            LOGGER.debug(f"Creating file store for {project}")
+            os.mkdir(project_location)
+        LOGGER.debug(f"Copying {filename} to store")
+        shutil.copy(filename, project_location)
+
+    def get_file(self, filename, project):
+        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        file_location = os.path.join(project_location, filename)
+        if not os.path.exists(file_location):
+            LOGGER.debug(f"File {filename} not found for {project}")
+            return None
+        return file_location
+
+    def get_project(self, project):
+        # Check project store exists
+        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        if not os.path.isdir(project_location):
+            LOGGER.debug(f"No files for {project}")
+            return []
+        project_list = []
+        for file_path in os.listdir(project_location):
+            LOGGER.debug(f"Processing file {file_path}")
+            # Ignore . files
+            if not file_path.startswith('.'):
+                project_list.append(file_path)
+        # Return list of files
+        return project_list
+        
+    def initialise_store(self):
+        for file_path in os.listdir(DISK_LOCATION_DEFAULT):
+            full_path = os.path.join(DISK_LOCATION_DEFAULT, file_path)
+            LOGGER.debug(f"Processing file {file_path} - {os.path.isdir(full_path)}")
+            # Ignore . files
+            if not file_path.startswith('.') and os.path.isdir(full_path):
+                LOGGER.debug(f"Deleting project directory {file_path}")
+                shutil.rmtree(full_path)
+      

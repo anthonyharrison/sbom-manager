@@ -1,0 +1,4 @@
+c:\users\test\github\examples\openssl-1.0.0g.tar
+#Should ignore
+c:\users\test\github\examples\README.txt
+c:\users\test\github\examples\user_interface\react-0.0.9-x86.zip

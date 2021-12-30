@@ -4,6 +4,7 @@
 """ Set up SBOM Input processing """
 
 import os.path
+import re
 
 import defusedxml.ElementTree as ET
 
@@ -21,6 +22,7 @@ class SBOMInput:
             "spdx": self.process_spdx_file,
             "cyclonedx": self.process_cyclonedx_file,
             "csv": self.process_csv_file,
+            "dir": self.process_directory_file,
         }
         self.logger = LOGGER.getChild(self.__class__.__name__)
 
@@ -104,5 +106,35 @@ class SBOMInput:
                     )
                     LOGGER.debug(
                         f"Add {line_elements[1].strip()} {line_elements[2].strip()}"
+                    )
+        return modules
+
+    def process_directory_file(self, filename):
+        # Process directory file
+        modules = []
+        with open(filename) as dir_file:
+            lines = dir_file.readlines()
+        for line in lines:
+            # Ignore comment line indicated by #
+            if line[0] != "#":
+                line_element = line.strip().rstrip("\n")
+                # Extract the filename (without extension) - make lowercase
+                item = os.path.splitext(os.path.basename(line_element))[0].lower()
+                # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
+                # Version assumed to start with digit. Therefore find first digit
+                product_version = re.search(r"\d[.\d]*[a-z0-9]*", item)
+                if product_version is not None:
+                    version = product_version.group(0)
+                    # Extract product from item (don't store '-' separator) 
+                    product = item[:product_version.start()-1]
+                    modules.append(
+                        {
+                            "vendor": "",
+                            "product": product.strip(),
+                            "version": version.strip(),
+                        }
+                    )
+                    LOGGER.debug(
+                        f"Add {product} {version}"
                     )
         return modules

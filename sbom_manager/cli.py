@@ -17,6 +17,8 @@ from sbom_manager.db import SBOMDB
 from sbom_manager.input import SBOMInput
 from sbom_manager.log import LOGGER
 from sbom_manager.output import SBOMOutput
+from sbom_manager.scan import SBOMScanner
+from sbom_manager.store import SBOMStore
 from sbom_manager.version import VERSION
 
 
@@ -52,7 +54,7 @@ def main(argv=None):
         "-t",
         "--sbom-type",
         action="store",
-        choices=["spdx", "cyclonedx", "csv"],
+        choices=["spdx", "cyclonedx", "csv", "dir"],
         help="SBOM file type",
     )
     input_group.add_argument(
@@ -121,7 +123,7 @@ def main(argv=None):
         "add_file": "",
         "sbom_type": "",
         "module": "",
-        "list": "all",
+        "list": "",
         "description": "",
         "project": "",
         "log_level": "info",
@@ -167,19 +169,26 @@ def main(argv=None):
 
     # Add output handler
     sbom_output = SBOMOutput(args["output_file"], args["format"])
+    
+    # Setup store manager
+    sbom_store = SBOMStore()
 
     # Do something
     if args["initialise"]:
         # Initialise everything
         LOGGER.debug("Initialise system")
         sbom_db.initialise_database()
+        sbom_store.initialise_store()
     elif args["add_file"]:
         # Process SBOM file
         LOGGER.debug(f"Add SBOM {args['add_file']}")
         sbom_data = sbom_input.process_file(args["add_file"])
         if sbom_data is not None:
-            # And add to database
+            # Add entry to database
             sbom_db.add_file(args["add_file"], desc, args["project"], args["sbom_type"], sbom_data)
+            # And store file
+            print (f"Store {args['add_file']}")
+            sbom_store.store(args["add_file"], args["project"])
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
@@ -204,4 +213,9 @@ def main(argv=None):
     elif args["scan"]:
         # Scan for vulnerabilities
         LOGGER.info("Scan system for vulnerabilities")
+        project_files = sbom_store.get_project(args['project'])
+        get_filename = sbom_store.get_file(project_files[-1], args['project'])
+        LOGGER.info(f"Scan {get_filename}")
+        svon_scan = SBOMScanner(get_filename)
+        sbom_scan.scan()
     return 0
