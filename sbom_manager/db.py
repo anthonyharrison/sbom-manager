@@ -137,8 +137,9 @@ class SBOMDB:
         file_id = cursor.lastrowid
         # Insert SBOM data records
         for data in sbom_data:
+            # Make sure all entries are lowercase
             cursor.execute(
-                insert_sbom, [file_id, data["vendor"], data["product"], data["version"]]
+                insert_sbom, [file_id, data["vendor"].lower(), data["product"].lower(), data["version"].lower()]
             )
         self.connection.commit()
         self.db_close()
@@ -151,9 +152,10 @@ class SBOMDB:
         find_module_query = """
         SELECT filename, project, description, vendor, product, version
         FROM sbom_file, sbom_data
-        WHERE sbom_file.file_id = sbom_data.file_id AND product = ?
+        WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
+        ORDER BY product ASC
         """
-        query_params = [module]
+        query_params = ["%" + module + "%"]
         # Handle optional project parameter
         if project != "":
             query_params.append(project)
@@ -170,14 +172,17 @@ class SBOMDB:
         cursor = self.connection.cursor()
         list_sbom = """
         SELECT filename, project, description, sbom_type, add_date FROM sbom_file
+        ORDER BY project ASC
         """
         list_module = """
-        SELECT vendor, product, version FROM sbom_data
+        SELECT product, version FROM sbom_data
+        ORDER BY product ASC
         """
         list_all = """
-        SELECT filename, project, description, vendor, product, version
+        SELECT filename, project, description, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
+        ORDER BY project ASC        
         """
         if contents == "sbom":
             cursor.execute(list_sbom)

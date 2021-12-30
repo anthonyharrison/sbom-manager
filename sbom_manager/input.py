@@ -50,7 +50,7 @@ class SBOMInput:
                 version = line_elements[1].strip().rstrip("\n")
                 version = version.split("-")[0]
                 version = version.split("+")[0]
-                if product != "":
+                if product != "" and version != "":
                     modules.append(
                         {"vendor": vendor, "product": product, "version": version}
                     )
@@ -122,19 +122,21 @@ class SBOMInput:
                 item = os.path.splitext(os.path.basename(line_element))[0].lower()
                 # Parse line PRODUCT-VERSION[-Other]?. If pattern not followed ignore...
                 # Version assumed to start with digit. Therefore find first digit
-                product_version = re.search(r"\d[.\d]*[a-z0-9]*", item)
+                product_version = re.search(r"-\d[.\d]*[a-z0-9]*", item)
                 if product_version is not None:
-                    version = product_version.group(0)
-                    # Extract product from item (don't store '-' separator) 
-                    product = item[:product_version.start()-1]
-                    modules.append(
-                        {
-                            "vendor": "",
-                            "product": product.strip(),
-                            "version": version.strip(),
-                        }
-                    )
-                    LOGGER.debug(
-                        f"Add {product} {version}"
-                    )
+                    # Extract version from item (don't store initial '-' separator)
+                    version = product_version.group(0)[1:]
+                    # Extract product from item 
+                    product = item[:product_version.start()]
+                    if product != "" and version != "":
+                        modules.append(
+                            {
+                                "vendor": "",
+                                "product": product.strip(),
+                                "version": version.strip(),
+                            }
+                        )
+                        LOGGER.debug(
+                            f"Add {product} {version}"
+                        )
         return modules

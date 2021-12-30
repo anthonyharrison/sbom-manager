@@ -204,10 +204,10 @@ def main(argv=None):
                 ["Filename", "Project", "Description", "SBOM Type", "Date Added"]
             )
         elif args["list"] == "module":
-            sbom_output.set_headings(["Vendor", "Product", "Version"])
+            sbom_output.set_headings(["Product", "Version"])
         else:
             sbom_output.set_headings(
-                ["Filename", "Project", "Description", "Vendor", "Product", "Version"]
+                ["Filename", "Project", "Description", "Product", "Version"]
             )
         sbom_output.generate_output(sbom_db.list_entries(args["list"]))
     elif args["scan"]:
