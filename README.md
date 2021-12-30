@@ -1,4 +1,6 @@
-# sbom-manager
+# SBOM Manager
+
+[![DepShield Badge](https://depshield.sonatype.org/badges/owner/repository/depshield.svg)](https://depshield.github.io)
 
 The SBOM Manager is a free, open source tool to help you manage a collection of SBOMs  (Software Bill of Materials).
 
@@ -12,22 +14,27 @@ and also to support security audit needs to determine if a particular component 
 
 ## Installation
 
-To install, just clone the repo.
+To install, just clone the repo and install dependencies using the following command
 
-The tool requires Python 3 (3.7+).
+`pip install -U -r requirements.txt'
+
+The tool requires Python 3 (3.7+). It is recommended to use a virtual python environment especially 
+if you are using different versions of python. `virtualenv` is a tool for setting up virtual python environments which
+allows you to have all the dependencies for the tool set up in a single environment, or have different environments set
+up for testing using different versions of Python.
 
 ## Usage
 
-`python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
+```python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
                 [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
                 [-p PROJECT] [-s] [-q]
                 [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
-                [-f {csv,console}] [-C CONFIG] [-I] [-V]
+                [-f {csv,console}] [-C CONFIG] [-I] [-V]```
 
 The SBOM Manager manages SBOMs (Software Bill of Materials) to allow
 searching for modules and scanning for vulnerabilities.
 
-optional arguments:
+```optional arguments:
   -h, --help            show this help message and exit
   -C CONFIG, --config CONFIG
                         Name of config file
@@ -56,7 +63,7 @@ Output:
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         Output filename (default: output to stdout)
   -f {csv,console}, --format {csv,console}
-                        Output format (default: console)`
+                        Output format (default: console)```
 						
 ## Operation
 
@@ -71,7 +78,7 @@ Once a repository is created, SBOM files need to be added. The following types o
   - SPDX (Tag/Value format compatible with version SPDX 2.2).
   - CycloneDX (XML format).
   - CSV where the file is a set of lines containing vendor, product, version entries.
-  - DIR which is a file containing a directory listing of filenames. To create a directory file, the following command can be used `find . -type f > <filename>`
+  - DIR which is a file containing a directory listing of filenames. To create a directory file, the following command can be used `find . -type f > dir_list`
 
 The type of SBOM to be added is specified using the `--type` parameter. 
 
@@ -106,19 +113,19 @@ Typical use cases for the tool are:
   - What version(s) of component Y is being used?
   - What vulnerabilities exist within my product? And what needs to be fixed?
 
-Is my organisation impacted by vulnerability Z with component X?
+### Is my organisation impacted by vulnerability Z with component X?
 
 `python sbom.py -–module <xx>`
 
-Does my project use version X of component Y?
+### Does my project use version X of component Y?
 
 `python sbom.py –p <project name> -m <product name> | grep <version>`
 
-What version(s) of component Y is being used?
+### What version(s) of component Y is being used?
 
 `python sbom.py –p <project name> -m <product name>`
 
-What vulnerabilities exist within my product? And what needs to be fixed?
+### What vulnerabilities exist within my product? And what needs to be fixed?
 
 `python sbom.py –p <project name> --scan`
 
