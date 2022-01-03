@@ -156,14 +156,15 @@ class SBOMDB:
         SELECT filename, project, description, vendor, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
-        ORDER BY product ASC
         """
+        order_query = " ORDER BY product ASC"
         query_params = ["%" + module + "%"]
         # Handle optional project parameter
         if project != "":
             query_params.append(project)
             find_module_query = find_module_query + " AND project = ?"
-        cursor.execute(find_module_query, query_params)
+        LOGGER.debug(f"Query: {find_module_query}{order_query} {query_params}")
+        cursor.execute(find_module_query + order_query, query_params)
         results = cursor.fetchall()
         self.db_close()
         self.audit_record("find")
@@ -198,9 +199,10 @@ class SBOMDB:
             order_query = " ORDER BY project ASC"
         query_params = []
         # Handle optional project parameter
-        if project != "":
+        if project != "" and contents != "module":
             query_params.append(project)
             list_query = list_query + list_query_prefix + " project = ?"
+        LOGGER.debug(f"Query: {list_query}{order_query} {query_params}")
         cursor.execute(list_query + order_query, query_params)
         results = cursor.fetchall()
         self.db_close()
