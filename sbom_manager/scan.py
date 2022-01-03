@@ -3,6 +3,8 @@
 
 """ SBOM Vulnerability Scanner """
 
+import subprocess
+
 from sbom_manager.log import LOGGER
 
 
@@ -16,11 +18,24 @@ class SBOMScanner:
         self.filename = filename
         self.options = options
 
+    def run_program(command_line):
+        # Remove any null bytes
+        command_line = command_line.replace("\x00", "")
+        # print (command_line)
+        # Split command line into individual elements
+        params = command_line.split()
+        # print(params)
+        res = subprocess.run(params, capture_output=True, text=True)
+        # print(res)
+        return res.stdout.splitlines()
+
     def scan(self):
         LOGGER.info(f"Scan {self.filename} for vulnerabilities")
         if len(self.options) > 0:
-            LOGGER.info(
-                f"{self.options['application']} {self.options['options']} {self.filename}"
-            )
+            command_line = f"{self.options['application']} {self.options['options']} "
+            command_line = command_line + f"{self.filename}"
+            LOGGER.info(command_line)
+            scan_output = self.run_program(command_line)
+            print(scan_output)
         else:
             LOGGER.warning("Unable to scan - vulnerability scanner not configured")
