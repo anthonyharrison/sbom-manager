@@ -187,18 +187,21 @@ class SBOMDB:
         if contents == "sbom":
             list_query = list_sbom
             list_query_prefix = " WHERE"
+            order_query = " ORDER BY project ASC"
         elif contents == "module":
             list_query = list_module
             list_query_prefix = " WHERE"
+            order_query = " ORDER BY product ASC"
         else:
             list_query = list_all
             list_query_prefix = " AND"
+            order_query = " ORDER BY project ASC"
         query_params = []
         # Handle optional project parameter
         if project != "":
             query_params.append(project)
             list_query = list_query + list_query_prefix + " project = ?"
-        cursor.execute(list_query + " ORDER BY project ASC", query_params)
+        cursor.execute(list_query + order_query, query_params)
         results = cursor.fetchall()
         self.db_close()
         self.audit_record("list")
