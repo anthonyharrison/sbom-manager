@@ -13,6 +13,7 @@ import sys
 import textwrap
 from collections import ChainMap
 
+from sbom_manager.config import SBOMConfig
 from sbom_manager.db import SBOMDB
 from sbom_manager.input import SBOMInput
 from sbom_manager.log import LOGGER
@@ -121,6 +122,7 @@ def main(argv=None):
 
     defaults = {
         "add_file": "",
+        "config" : "",
         "sbom_type": "",
         "module": "",
         "list": "",
@@ -137,12 +139,11 @@ def main(argv=None):
     args = {key: value for key, value in vars(raw_args).items() if value}
 
     configs = {}
-    if args.get("config"):
-        # TODO
-        config = configparser.ConfigParser()
-        configs = config.read(args["config"])
 
     args = ChainMap(args, configs, defaults)
+
+    config_file = args["config"] if args["config"] else ""
+    sbom_config = SBOMConfig(config_file)
 
     # Logging related settings
     if args["log_level"]:
@@ -219,6 +220,6 @@ def main(argv=None):
             # Only scan latest file
             get_filename = sbom_store.get_file(project_files[-1], args['project'])
             LOGGER.info(f"Scan {get_filename}")
-            sbom_scan = SBOMScanner(get_filename)
+            sbom_scan = SBOMScanner(get_filename, sbom_config.get_section("scan"))
             sbom_scan.scan()
     return 0
