@@ -166,30 +166,36 @@ class SBOMDB:
         self.audit_record("find")
         return results
 
-    def list_entries(self, contents):
+    def list_entries(self, contents, project):
         """Function that extracts entries from database"""
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
         SELECT filename, project, description, sbom_type, add_date FROM sbom_file
-        ORDER BY project ASC
         """
         list_module = """
         SELECT product, version FROM sbom_data
-        ORDER BY product ASC
         """
         list_all = """
         SELECT filename, project, description, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
-        ORDER BY project ASC        
         """
         if contents == "sbom":
-            cursor.execute(list_sbom)
+            list_query = list_sbom
+            list_query_prefix = " WHERE"
         elif contents == "module":
-            cursor.execute(list_module)
+            list_query = list_module
+            list_query_prefix = " WHERE"
         else:
-            cursor.execute(list_all)
+            list_query = list_all
+            list_query_prefix = " AND"
+        query_params = []
+        # Handle optional project parameter
+        if project != "":
+            query_params.append(project)
+            list_query = list_query + list_query_prefix + " project = ?"    
+        cursor.execute(list_query + " ORDER BY project ASC", query_params)    
         results = cursor.fetchall()
         self.db_close()
         self.audit_record("list")

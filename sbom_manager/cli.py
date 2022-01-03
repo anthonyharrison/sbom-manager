@@ -44,6 +44,9 @@ def main(argv=None):
 
     input_group = parser.add_argument_group("Input")
     input_group.add_argument(
+        "-I", "--initialise", action="store_true", help="Initialise SBOM manager"
+    )
+    input_group.add_argument(
         "-a",
         "--add",
         action="store",
@@ -115,9 +118,6 @@ def main(argv=None):
     parser.add_argument(
         "-C", "--config", action="store", default="", help="Name of config file"
     )
-    parser.add_argument(
-        "-I", "--initialise", action="store_true", help="Initialise SBOM manager"
-    )
     parser.add_argument("-V", "--version", action="version", version=VERSION)
 
     defaults = {
@@ -188,7 +188,7 @@ def main(argv=None):
             # Add entry to database
             sbom_db.add_file(args["add_file"], desc, args["project"], args["sbom_type"], sbom_data)
             # And store file
-            print (f"Store {args['add_file']}")
+            LOGGER.debug (f"Store {args['add_file']}")
             sbom_store.store(args["add_file"], args["project"])
     elif args["module"]:
         # Search for module
@@ -210,7 +210,7 @@ def main(argv=None):
             sbom_output.set_headings(
                 ["Filename", "Project", "Description", "Product", "Version"]
             )
-        sbom_output.generate_output(sbom_db.list_entries(args["list"]))
+        sbom_output.generate_output(sbom_db.list_entries(args["list"], args["project"]))
     elif args["scan"]:
         # Scan for vulnerabilities
         LOGGER.info("Scan system for vulnerabilities")
@@ -218,8 +218,8 @@ def main(argv=None):
         # Check that files exist for project
         if len(project_files) > 0:
             # Only scan latest file
-            get_filename = sbom_store.get_file(project_files[-1], args['project'])
+            filename_to_scan = sbom_store.get_file(project_files[-1], args['project'])
             LOGGER.info(f"Scan {get_filename}")
-            sbom_scan = SBOMScanner(get_filename, sbom_config.get_section("scan"))
+            sbom_scan = SBOMScanner(filename_to_scan, sbom_config.get_section("scan"))
             sbom_scan.scan()
     return 0
