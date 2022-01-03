@@ -90,10 +90,7 @@ class SBOMDB:
         # Insert audit entry
         cursor.execute(
             insert_audit_record,
-            [
-                datetime.datetime.now().strftime("%H:%M:%S %d-%b-%Y"), 
-                command_line
-            ],
+            [datetime.datetime.now().strftime("%H:%M:%S %d-%b-%Y"), command_line],
         )
         self.connection.commit()
         self.db_close()
@@ -139,7 +136,13 @@ class SBOMDB:
         for data in sbom_data:
             # Make sure all entries are lowercase
             cursor.execute(
-                insert_sbom, [file_id, data["vendor"].lower(), data["product"].lower(), data["version"].lower()]
+                insert_sbom,
+                [
+                    file_id,
+                    data["vendor"].lower(),
+                    data["product"].lower(),
+                    data["version"].lower(),
+                ],
             )
         self.connection.commit()
         self.db_close()
@@ -194,8 +197,8 @@ class SBOMDB:
         # Handle optional project parameter
         if project != "":
             query_params.append(project)
-            list_query = list_query + list_query_prefix + " project = ?"    
-        cursor.execute(list_query + " ORDER BY project ASC", query_params)    
+            list_query = list_query + list_query_prefix + " project = ?"
+        cursor.execute(list_query + " ORDER BY project ASC", query_params)
         results = cursor.fetchall()
         self.db_close()
         self.audit_record("list")

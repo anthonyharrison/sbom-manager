@@ -6,8 +6,8 @@
 import uuid
 from datetime import datetime
 
-from sbom_manager.log import LOGGER
 from sbom_manager.version import VERSION
+
 
 class SPDXGenerator:
     """
@@ -20,7 +20,6 @@ class SPDXGenerator:
     SPDX_LICENCE_VERSION = "3.9"
     SPDX_PROJECT_ID = "SPDXRef-DOCUMENT"
     NAME = "SPDX_Generator"
-
 
     def __init__(self):
         self.doc = []
@@ -48,7 +47,10 @@ class SPDXGenerator:
         self.generateTag("DocumentName", project_name.replace(" ", "-"))
         self.generateTag(
             "DocumentNamespace",
-            self.SPDX_NAMESPACE + project_name.replace(" ", "-") + "-" + str(uuid.uuid4()),
+            self.SPDX_NAMESPACE
+            + project_name.replace(" ", "-")
+            + "-"
+            + str(uuid.uuid4()),
         )
         self.generateTag("LicenseListVersion", self.SPDX_LICENCE_VERSION)
         self.generateTag("Creator: Tool", self.NAME + "-" + VERSION)
@@ -70,7 +72,6 @@ class SPDXGenerator:
         self.generateTag("PackageLicenseDeclared", "NOASSERTION")
         self.generateTag("PackageCopyrightText", "NOASSERTION")
         self.generateRelationship(parent_id, package_id, " CONTAINS ")
-        return package_id
 
     def generateRelationship(self, from_id, to_id, relationship_type):
         self.generateTag("\nRelationship", from_id + relationship_type + to_id)
@@ -90,7 +91,9 @@ class SBOMGenerator:
         # Get list of packages
         id = 1
         for package in packages:
-            package_id = self.bom.generatePackageDetails(package['product'], id, package['version'], project_id)
+            self.bom.generatePackageDetails(
+                package["product"], id, package["version"], project_id
+            )
             id = id + 1
 
     def show_spdx(self):

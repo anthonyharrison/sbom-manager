@@ -126,17 +126,16 @@ class SBOMInput:
                 if product_version is not None:
                     # Extract version from item (don't store initial '-' separator)
                     version = product_version.group(0)[1:]
-                    # Extract product from item 
-                    product = item[:product_version.start()]
+                    # Extract product from item
+                    product = item[: product_version.start()]
                     if product != "" and version != "":
-                        modules.append(
-                            {
-                                "vendor": "",
-                                "product": product.strip(),
-                                "version": version.strip(),
-                            }
-                        )
-                        LOGGER.debug(
-                            f"Add {product} {version}"
-                        )
+                        new_module = {
+                            "vendor": "",
+                            "product": product.strip(),
+                            "version": version.strip(),
+                        }
+                        # Ensure that entry not duplicated
+                        if new_module not in modules:
+                            modules.append(new_module)
+                            LOGGER.debug(f"Add {product} {version}")
         return modules

@@ -19,6 +19,8 @@ class SBOMScanner:
     def scan(self):
         LOGGER.info(f"Scan {self.filename} for vulnerabilities")
         if len(self.options) > 0:
-            LOGGER.info(f"{self.options['application']} {self.options['options']} {self.filename}")
+            LOGGER.info(
+                f"{self.options['application']} {self.options['options']} {self.filename}"
+            )
         else:
             LOGGER.warning("Unable to scan - vulnerability scanner not configured")
