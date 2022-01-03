@@ -7,17 +7,18 @@ and scanning for vulnerabilities.
 """
 
 import argparse
-import configparser
 import logging
+import os
 import sys
 import textwrap
 from collections import ChainMap
 
 from sbom_manager.config import SBOMConfig
 from sbom_manager.db import SBOMDB
+from sbom_manager.generate import SBOMGenerator
 from sbom_manager.input import SBOMInput
 from sbom_manager.log import LOGGER
-from sbom_manager.output import SBOMOutput
+from sbom_manager.output import SBOMOutput, OutputManager
 from sbom_manager.scan import SBOMScanner
 from sbom_manager.store import SBOMStore
 from sbom_manager.version import VERSION
@@ -190,6 +191,16 @@ def main(argv=None):
             # And store file
             LOGGER.debug (f"Store {args['add_file']}")
             sbom_store.store(args["add_file"], args["project"])
+            if args["sbom_type"] != "spdx":
+                # Generate SPDX format file
+                sbom_gen = SBOMGenerator()
+                sbom_gen.generate_spdx(args["project"], sbom_data)
+                spdx_filename = os.path.splitext(os.path.basename(args["add_file"]))[0] + ".spdx"
+                spdx_filegen = OutputManager("file", spdx_filename)
+                for line in sbom_gen.get_spdx():
+                    spdx_filegen.file_out(line)
+                spdx_filegen.close()
+                sbom_store.store(spdx_filename, args["project"])
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
@@ -217,9 +228,12 @@ def main(argv=None):
         project_files = sbom_store.get_project(args['project'])
         # Check that files exist for project
         if len(project_files) > 0:
-            # Only scan latest file
+            # Only scan latest file. Ensure that file used is in SPDX format
             filename_to_scan = sbom_store.get_file(project_files[-1], args['project'])
-            LOGGER.info(f"Scan {get_filename}")
+            if not filename_to_scan.endswith(".spdx"):
+                # Use spdx file
+                filename_to_scan = os.path.splitext(filename_to_scan)[0]+'.spdx'
+            LOGGER.info(f"Scan {filename_to_scan}")
             sbom_scan = SBOMScanner(filename_to_scan, sbom_config.get_section("scan"))
             sbom_scan.scan()
     return 0
