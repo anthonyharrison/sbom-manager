@@ -36,6 +36,7 @@ class SBOMScanner:
             command_line = command_line + f"{self.filename}"
             LOGGER.info(command_line)
             scan_output = self.run_program(command_line)
-            print(scan_output)
+            for i in scan_output:
+                print(i)
         else:
             LOGGER.warning("Unable to scan - vulnerability scanner not configured")

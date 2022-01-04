@@ -15,6 +15,11 @@ class LevelFilter(logging.Filter):
     def filter(self, record):
         return record.levelno < self.level
 
+logging.basicConfig(
+    level="INFO",
+    format="%(asctime)s %(levelname)-8s %(name)s - %(message)s",
+    datefmt="[%X]",
+)
 
 # Add the handlers to the root logger
 root_logger = logging.getLogger()
