@@ -209,7 +209,7 @@ def main(argv=None):
                 for line in sbom_gen.get_spdx():
                     spdx_filegen.file_out(line)
                 spdx_filegen.close()
-                sbom_store.store(spdx_filename, args["project"])
+                sbom_store.store(spdx_filename, args["project"], delete = True)
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")

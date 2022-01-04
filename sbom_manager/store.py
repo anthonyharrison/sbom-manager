@@ -3,6 +3,7 @@
 
 """ Set up File Storage """
 
+import os
 import os.path
 import shutil
 
@@ -20,7 +21,7 @@ class SBOMStore:
     def __init__(self):
         self.logger = LOGGER.getChild(self.__class__.__name__)
 
-    def store(self, filename, project):
+    def store(self, filename, project, delete = False):
         # Check project store exists. If not create it
         project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
         if not os.path.isdir(project_location):
@@ -28,6 +29,9 @@ class SBOMStore:
             os.mkdir(project_location)
         LOGGER.debug(f"Copying {filename} to store")
         shutil.copy(filename, project_location)
+        if delete:
+            LOGGER.debug(f"Deleting {filename}")
+            os.remove(filename)
 
     def get_file(self, filename, project):
         project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
