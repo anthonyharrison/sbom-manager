@@ -224,7 +224,7 @@ def main(argv=None):
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
             sbom_output.set_headings(
-                ["Filename", "Project", "Description", "SBOM Type", "Date Added"]
+                ["Filename", "Project", "Description", "SBOM Type", "Record Count", "Date Added"]
             )
         elif args["list"] == "module":
             sbom_output.set_headings(["Product", "Version"])

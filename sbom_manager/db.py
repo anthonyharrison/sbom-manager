@@ -45,6 +45,7 @@ class SBOMDB:
             project TEXT,
             description TEXT,
             sbom_type TEXT,
+            record_count TEXT,
             add_date TIMESTAMP
         )
         """
@@ -110,6 +111,11 @@ class SBOMDB:
         )
         VALUES (?, ?, ?, ?, ?)
         """
+        update_file_entry = """
+        UPDATE sbom_file 
+        SET record_count = ?
+        WHERE file_id = ?
+        """
         insert_sbom = """
         INSERT or REPLACE INTO sbom_data(
             file_id,
@@ -132,7 +138,8 @@ class SBOMDB:
         )
         # Find id of last entry to reference with SBOM data
         file_id = cursor.lastrowid
-        # Insert SBOM data records
+        # Insert SBOM data records. Maintain count of records inserted
+        record_count = 0
         for data in sbom_data:
             # Make sure all entries are lowercase
             cursor.execute(
@@ -144,6 +151,9 @@ class SBOMDB:
                     data["version"].lower(),
                 ],
             )
+            record_count = record_count + 1
+        update_params = [record_count, file_id]
+        cursor.execute(update_file_entry, update_params)        
         self.connection.commit()
         self.db_close()
         self.audit_record("add")
@@ -175,7 +185,7 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT filename, project, description, sbom_type, add_date FROM sbom_file
+        SELECT filename, project, description, sbom_type, record_count, add_date FROM sbom_file
         """
         list_module = """
         SELECT product, version FROM sbom_data
