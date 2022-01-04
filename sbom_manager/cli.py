@@ -169,6 +169,11 @@ def main(argv=None):
         LOGGER.info("Project name not specified")
         return -1
 
+    # Ensure project name doesn't have a space (to ensure directory name is valid)
+    if ' ' in args["project"]:
+        args["project"] = args["project"].replace(' ','_')
+        LOGGER.info(f"Renaming project name to {args['project']}")
+
     # Add output handler
     sbom_output = SBOMOutput(args["output_file"], args["format"])
 
