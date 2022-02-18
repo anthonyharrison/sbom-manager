@@ -67,7 +67,7 @@ def main(argv=None):
         "--list",
         action="store",
         choices=["all", "sbom", "module"],
-        help="list SBOMs (default all)",
+        help="list contents of SBOM",
     )
     input_group.add_argument(
         "-m", "--module", action="store", default="", help="Find module in SBOMs"
@@ -244,7 +244,6 @@ def main(argv=None):
             if not filename_to_scan.endswith(".spdx"):
                 # Use spdx file
                 filename_to_scan = os.path.splitext(filename_to_scan)[0] + ".spdx"
-            LOGGER.info(f"Scan {filename_to_scan}")
             sbom_scan = SBOMScanner(filename_to_scan, sbom_config.get_section("scan"))
             sbom_scan.scan()
     return 0
