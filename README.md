@@ -1,11 +1,9 @@
 # SBOM Manager
 
-[![DepShield Badge](https://depshield.sonatype.org/badges/owner/repository/depshield.svg)](https://depshield.github.io)
-
-The SBOM Manager is a free, open source tool to help you manage a collection of SBOMs(Software Bill of Materials) in a number of formats including
+The SBOM Manager is a free, open source tool to help manage a collection of SBOMs(Software Bill of Materials) in a number of formats including
 [SPDX](https://www.spdx.org) and [CycloneDX](https://www.cyclonedx.org).
 
-The tool has two main modes of operation:
+The tool has two modes of operation:
 
 1. A repository which maintains the set of components which have been included as part of a release or build of a software product.
 2. Tools for quering the inclusion of specific products in a project development to answer some commmon use cases.
@@ -82,7 +80,7 @@ Once a repository is created, SBOM files can be added. The following types of SB
   - CSV where the file is a set of lines containing vendor, product, version entries.
   - DIR which is a file containing a directory listing of filenames. To create a directory file on a Linux based system, the following command can be used `find . -type f > dir_list`
 
-The type of SBOM to be added is specified using the `--type` parameter. A spdx tag value file will be generated, if required, for each SBOM file.
+The type of SBOM to be added is specified using the `--type` parameter. A SPDX tag/value file will be generated, if required, for each SBOM file which is added to the repository.
 
 The `--project` parameter is intended to be used to allow for filtering of SBOMs when querying for data. 
 
@@ -127,7 +125,7 @@ The options are grouped into two sections **data** and **scan**.
 
 The following options are supported:
 
-- *location* is within the data section and used to specify the location of the repository to store the SBOM files. A default location is used if this is not specified. The 
+- *location* is within the data section and used to specify the location of the repository to store the SBOM files. A default location is used if this is not specified.
 
 - *application* is within the scan section and is used to specify the name of the application to be used with the `--scan` option. A fully qualified path may need to be specified
 depending on the system configuration.
