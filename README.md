@@ -3,7 +3,7 @@
 [![DepShield Badge](https://depshield.sonatype.org/badges/owner/repository/depshield.svg)](https://depshield.github.io)
 
 The SBOM Manager is a free, open source tool to help you manage a collection of SBOMs(Software Bill of Materials) in a number of formats including
-[SPDX](https://www.spdx.org) and [CycloneDX] (https://www.cyclonedx.org).
+[SPDX](https://www.spdx.org) and [CycloneDX](https://www.cyclonedx.org).
 
 The tool has two main modes of operation:
 
@@ -108,7 +108,7 @@ the `--format` option which may be useful if the output is to be used as an inpu
 
 ## Configuration File
 
-A configuration file is used to specify a number of options for the tool.
+A configuration file is used to specify a number of options for the tool. The following is an example file.
 
 ```
 # SBOM configuration file
@@ -121,16 +121,18 @@ application = cve-bin-tool
 options = --sbom spdx --sbom-file
 ```
 
-Comments are indicated by lines beggining with '#'. All content is ignored
+Comments are indicated by lines starting with '#'. All content is ignored.
+
+The options are grouped into two sections **data** and **scan**.
 
 The following options are supported:
 
-- *data* is used to specify the location of the repository to store the SBOM files. A default location is used if this is not specified.
+- *location* is within the data section and used to specify the location of the repository to store the SBOM files. A default location is used if this is not specified. The 
 
-- *application* is used to specify the name of the application to be used with the `--scan` option. A fully qualified path may need to be specified
+- *application* is within the scan section and is used to specify the name of the application to be used with the `--scan` option. A fully qualified path may need to be specified
 depending on the system configuration.
 
-- *options* is used to specify any application specific options to be used when scanning a SBOM file for vulnerabilities. The SBOM file name to be scanned
+- *options* is within the scan section and is used to specify any application specific options to be used when scanning a SBOM file for vulnerabilities. The SBOM file name to be scanned
 will be automatically appended to the options.
 
 ## Licence
