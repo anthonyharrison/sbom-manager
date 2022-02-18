@@ -178,7 +178,7 @@ def main(argv=None):
     sbom_output = SBOMOutput(args["output_file"], args["format"])
 
     # Setup store manager
-    sbom_store = SBOMStore()
+    sbom_store = SBOMStore(sbom_config.get_section("data"))
 
     # Do something
     if args["initialise"]:

@@ -18,12 +18,17 @@ class SBOMStore:
     File storage management for SBOM data.
     """
 
-    def __init__(self):
+    def __init__(self, disk_location):
         self.logger = LOGGER.getChild(self.__class__.__name__)
+        self.location = DISK_LOCATION_DEFAULT
+        if len(disk_location) > 0:
+            # User specified storage location
+            self.location = disk_location['location']
+        LOGGER.debug(f"Storage location: {self.location}")
 
     def store(self, filename, project, delete = False):
         # Check project store exists. If not create it
-        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        project_location = os.path.join(self.location, project)
         if not os.path.isdir(project_location):
             LOGGER.debug(f"Creating file store for {project}")
             os.mkdir(project_location)
@@ -34,7 +39,7 @@ class SBOMStore:
             os.remove(filename)
 
     def get_file(self, filename, project):
-        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        project_location = os.path.join(self.location, project)
         file_location = os.path.join(project_location, filename)
         if not os.path.exists(file_location):
             LOGGER.debug(f"File {filename} not found for {project}")
@@ -43,7 +48,7 @@ class SBOMStore:
 
     def get_project(self, project):
         # Check project store exists
-        project_location = os.path.join(DISK_LOCATION_DEFAULT, project)
+        project_location = os.path.join(self.location, project)
         if not os.path.isdir(project_location):
             LOGGER.debug(f"No files for {project}")
             return []
@@ -57,8 +62,8 @@ class SBOMStore:
         return project_list
 
     def initialise_store(self):
-        for file_path in os.listdir(DISK_LOCATION_DEFAULT):
-            full_path = os.path.join(DISK_LOCATION_DEFAULT, file_path)
+        for file_path in os.listdir(self.location):
+            full_path = os.path.join(self.location, file_path)
             LOGGER.debug(f"Processing file {file_path} - {os.path.isdir(full_path)}")
             # Ignore . files
             if not file_path.startswith('.') and os.path.isdir(full_path):
