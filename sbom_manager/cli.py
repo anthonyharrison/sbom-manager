@@ -240,7 +240,7 @@ def main(argv=None):
         project_files = sbom_store.get_project(args["project"])
         # Check that files exist for project
         for project_file in project_files:
-            # Only scan latest file. Ensure that file used is in SPDX format
+            # Ensure that file used is in SPDX format
             filename_to_scan = sbom_store.get_file(project_file, args["project"])
             if not filename_to_scan.endswith(".spdx"):
                 # Use spdx file
