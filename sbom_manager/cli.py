@@ -247,3 +247,6 @@ def main(argv=None):
             sbom_scan = SBOMScanner(filename_to_scan, sbom_config.get_section("scan"))
             sbom_scan.scan()
     return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

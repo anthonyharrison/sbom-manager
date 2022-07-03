@@ -13,7 +13,11 @@ and also to support security audit needs to determine if a particular component 
 
 ## Installation
 
-To install, just clone the repo and install dependencies using the following command:
+To install use the following command:
+
+`pip install sbom-manager`
+
+Alternatively, just clone the repo and install dependencies using the following command:
 
 `pip install -U -r requirements.txt`
 
@@ -25,7 +29,7 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-python sbom.py [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
+sbom-manager [-h] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
                 [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
                 [-p PROJECT] [-s] [-q]
                 [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
@@ -69,7 +73,7 @@ Output:
 
 To start using the tool, a repository needs to be created.
 
-`python sbom.py -I`
+`sbom-manager -I`
 
 You can also use this command if the repository needs to be reset, e.g. following an upgrade to the tool.
 
@@ -154,39 +158,43 @@ Typical use cases for the tool are:
 
 ### Is my organisation impacted by vulnerability Z with component X?
 
-`python sbom.py -–module <xx>`
+This is simply addressed by looking for the component in the set of SBOMs.
+
+`sbom-manager -–module <module name>`
+
+This could also be filtered on a project basis.
+
+If the component is found then further analysis would be required to match the specific vulnerability with the version(s) of the component.
 
 ### Does my project use version X of component Y?
 
-`python sbom.py –p <project name> -m <product name> | grep <version>`
+This can be achieved by looking for the component and filtering on the version of the component.
+
+`sbom-manager –-project <project name> -–module <module name> | grep <version>`
 
 ### What version(s) of component Y is being used?
 
 To look across all projects
 
-`python sbom.py -m <product name>`
+`sbom-manager -–module <product name>`
 
 This can also be filtered on a project basis.
 
-`python sbom.py –p <project name> -m <product name>`
+`sbom-manager –-project <project name> -–module <module name>`
 
 ### What vulnerabilities exist within my product? And what needs to be fixed?
 
-This requires the use of an external vulnerability scanner which takes a spdx tag value file as input. The path
+This requires the use of an external vulnerability scanner which takes a spdx tag value SBOM file as input. The path
 to the vulnerability scanner is specified in a configuration file as well as any tool specific parameters to be
 specified (e.g. to filter on severity value).
 
-`python sbom.py –p <project name> --scan`
+`sbom-manager –-project <project name> --scan`
+
+This will report a set of vulnerabilities (if any) against each of the components defined within the SBOM file.
+
+Unfortunately, determining whether each of the reported vulnerabilities needs to be fixed is beyond the capability of this tool!
 
 ## Feedback and Contributions
 
 Bugs and feature requests can be made via GitHub Issues. Take care when providing output to make sure you are not
 disclosing security issues in other products.
-
-Pull requests are via git.
-
-## Security Issues
-
-Security issues with the tool itself can be reported using GitHub Issues.
-
-If in the course of using this tool you discover a security issue with someone else's code, please disclose responsibly to the appropriate party.
