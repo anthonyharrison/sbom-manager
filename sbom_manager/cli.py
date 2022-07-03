@@ -214,7 +214,7 @@ def main(argv=None):
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
         sbom_output.set_headings(
-            ["Filename", "Project", "Description", "Vendor", "Product", "Version"]
+            ["Filename", "Project", "Description", "Product", "Version"]
         )
         sbom_output.generate_output(
             sbom_db.find_module(args["module"], args["project"])

@@ -163,7 +163,7 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         find_module_query = """
-        SELECT filename, project, description, vendor, product, version
+        SELECT filename, project, description, product, version
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
         """
