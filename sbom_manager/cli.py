@@ -239,9 +239,9 @@ def main(argv=None):
         LOGGER.info("Scan system for vulnerabilities")
         project_files = sbom_store.get_project(args["project"])
         # Check that files exist for project
-        if len(project_files) > 0:
+        for project_file in project_files:
             # Only scan latest file. Ensure that file used is in SPDX format
-            filename_to_scan = sbom_store.get_file(project_files[-1], args["project"])
+            filename_to_scan = sbom_store.get_file(project_file, args["project"])
             if not filename_to_scan.endswith(".spdx"):
                 # Use spdx file
                 filename_to_scan = os.path.splitext(filename_to_scan)[0] + ".spdx"
