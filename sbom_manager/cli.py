@@ -134,6 +134,7 @@ def main(argv=None):
         "quiet": False,
         "output_file": "console",
         "initialise": False,
+        "scan": False,
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -246,6 +247,8 @@ def main(argv=None):
                 filename_to_scan = os.path.splitext(filename_to_scan)[0] + ".spdx"
             sbom_scan = SBOMScanner(filename_to_scan, sbom_config.get_section("scan"))
             sbom_scan.scan()
+    else:
+        LOGGER.debug("Nothing to do")
     return 0
 
 if __name__ == "__main__":
