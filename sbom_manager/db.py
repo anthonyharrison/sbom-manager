@@ -190,6 +190,11 @@ class SBOMDB:
         list_module = """
         SELECT product, version FROM sbom_data
         """
+        list_project_module = """
+        SELECT product, version
+        FROM sbom_file, sbom_data
+        WHERE sbom_file.file_id = sbom_data.file_id
+        """
         list_all = """
         SELECT filename, project, description, product, version
         FROM sbom_file, sbom_data
@@ -202,6 +207,9 @@ class SBOMDB:
         elif contents == "module":
             list_query = list_module
             list_query_prefix = " WHERE"
+            if project != "":
+                list_query = list_project_module
+                list_query_prefix = " AND"
             order_query = " ORDER BY product ASC"
         else:
             list_query = list_all
@@ -209,7 +217,7 @@ class SBOMDB:
             order_query = " ORDER BY project ASC"
         query_params = []
         # Handle optional project parameter
-        if project != "" and contents != "module":
+        if project != "":
             query_params.append(project)
             list_query = list_query + list_query_prefix + " project = ?"
         LOGGER.debug(f"Query: {list_query}{order_query} {query_params}")
