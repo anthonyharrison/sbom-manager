@@ -215,7 +215,7 @@ def main(argv=None):
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
         sbom_output.set_headings(
-            ["Filename", "Project", "Description", "Product", "Version"]
+            ["SBOM", "Project", "Description", "Product", "Version"]
         )
         sbom_output.generate_output(
             sbom_db.find_module(args["module"], args["project"])
@@ -225,13 +225,13 @@ def main(argv=None):
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
             sbom_output.set_headings(
-                ["Filename", "Project", "Description", "SBOM Type", "Record Count", "Date Added"]
+                ["SBOM", "Project", "Description", "SBOM Type", "Record Count", "Date Added"]
             )
         elif args["list"] == "module":
             sbom_output.set_headings(["Product", "Version"])
         else:
             sbom_output.set_headings(
-                ["Filename", "Project", "Description", "Product", "Version"]
+                ["SBOM", "Project", "Description", "Product", "Version"]
             )
         sbom_output.generate_output(sbom_db.list_entries(args["list"], args["project"]))
     elif args["scan"]:

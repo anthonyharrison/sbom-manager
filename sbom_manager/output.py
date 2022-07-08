@@ -86,11 +86,14 @@ class SBOMOutput:
         self.output_manager.show(data)
 
     def generate_output(self, dataset):
-        if self.headings is not None:
-            hdr = self.format_process[self.output_format](self.headings)
-            self.send_output(hdr)
-            if self.output_format == "console":
-                self.send_output("=" * len(hdr))
-        for data_item in dataset:
-            self.send_output(self.format_process[self.output_format](data_item))
+        if len(dataset) > 0:
+            if self.headings is not None:
+                hdr = self.format_process[self.output_format](self.headings)
+                self.send_output(hdr)
+                if self.output_format == "console":
+                    self.send_output("=" * len(hdr))
+            for data_item in dataset:
+                self.send_output(self.format_process[self.output_format](data_item))
+        else:
+            self.send_output("No data found")
         self.output_manager.close()
