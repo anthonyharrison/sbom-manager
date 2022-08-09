@@ -165,14 +165,18 @@ def main(argv=None):
     if args["add_file"] and not args["sbom_type"]:
         LOGGER.info("SBOM type not specified")
         return -1
-    sbom_input = SBOMInput(args["sbom_type"])
+    sbom_type = args["sbom_type"]
+    # Detect json files
+    if args["add_file"].endswith(".json") and sbom_type in ["spdx", "cyclonedx"]:
+        sbom_type = sbom_type + "_json"
+    sbom_input = SBOMInput(sbom_type)
     if args["add_file"] and not args["project"]:
         LOGGER.info("Project name not specified")
         return -1
 
     # Ensure project name doesn't have a space (to ensure directory name is valid)
-    if ' ' in args["project"]:
-        args["project"] = args["project"].replace(' ','_')
+    if " " in args["project"]:
+        args["project"] = args["project"].replace(" ", "_")
         LOGGER.info(f"Renaming project name to {args['project']}")
 
     # Add output handler
@@ -210,7 +214,7 @@ def main(argv=None):
                 for line in sbom_gen.get_spdx():
                     spdx_filegen.file_out(line)
                 spdx_filegen.close()
-                sbom_store.store(spdx_filename, args["project"], delete = True)
+                sbom_store.store(spdx_filename, args["project"], delete=True)
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
@@ -225,7 +229,14 @@ def main(argv=None):
         LOGGER.debug("List contents")
         if args["list"] == "sbom":
             sbom_output.set_headings(
-                ["SBOM", "Project", "Description", "SBOM Type", "Record Count", "Date Added"]
+                [
+                    "SBOM",
+                    "Project",
+                    "Description",
+                    "SBOM Type",
+                    "Record Count",
+                    "Date Added",
+                ]
             )
         elif args["list"] == "module":
             sbom_output.set_headings(["Product", "Version"])
@@ -250,6 +261,7 @@ def main(argv=None):
     else:
         LOGGER.debug("Nothing to do")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

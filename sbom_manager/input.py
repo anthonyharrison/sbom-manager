@@ -3,6 +3,7 @@
 
 """ Set up SBOM Input processing """
 
+import json
 import os.path
 import re
 
@@ -20,7 +21,9 @@ class SBOMInput:
         self.sbom_type = sbom_type
         self.sbom_process = {
             "spdx": self.process_spdx_file,
+            "spdx_json": self.process_spdx_json_file,
             "cyclonedx": self.process_cyclonedx_file,
+            "cyclonedx_json": self.process_cyclonedx_json_file,
             "csv": self.process_csv_file,
             "dir": self.process_directory_file,
         }
@@ -58,6 +61,17 @@ class SBOMInput:
                     product = ""  # Reset
         return modules
 
+    def process_spdx_json_file(self, filename):
+        # Process SPDX JSON file
+        modules = []
+        data = json.load(open(filename))
+        for d in data["packages"]:
+            product = d["name"]
+            version = d["versionInfo"]
+            modules.append({"vendor": "", "product": product, "version": version})
+            LOGGER.debug(f"Add {product} {version}")
+        return modules
+
     def process_cyclonedx_file(self, filename):
         # Process CycloneDX XML BOM file
         modules = []
@@ -69,8 +83,8 @@ class SBOMInput:
         vendor = ""
         for components in root.findall(schema + "components"):
             for component in components.findall(schema + "component"):
-                # Only if library....
-                if component.attrib["type"] == "library":
+                # Only if application or library....
+                if component.attrib["type"] in ["library", "application"]:
                     component_name = component.find(schema + "name")
                     product = component_name.text
                     component_version = component.find(schema + "version")
@@ -84,6 +98,18 @@ class SBOMInput:
                             }
                         )
                         LOGGER.debug(f"Add {product} {version}")
+        return modules
+
+    def process_cyclonedx_json_file(self, filename):
+        # Process CycloneDX JSON file
+        modules = []
+        data = json.load(open(filename))
+        for d in data["components"]:
+            if d["type"] in ["application", "library"]:
+                product = d["name"]
+                version = d["version"]
+                modules.append({"vendor": "", "product": product, "version": version})
+                LOGGER.debug(f"Add {product} {version}")
         return modules
 
     def process_csv_file(self, filename):
