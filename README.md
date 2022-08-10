@@ -79,12 +79,14 @@ You can also use this command if the repository needs to be reset, e.g. followin
 
 Once a repository is created, SBOM files can be added. The following types of SBOMs are supported:
 
-  - SPDX (Tag/Value format compatible with version SPDX 2.2).
-  - CycloneDX (XML format).
+  - SPDX (Tag/Value format or JSON format compatible with version SPDX 2.2).
+  - CycloneDX (XML format or JSON format compatible with CycloneDX version 1.4).
   - CSV where the file is a set of lines containing vendor, product, version entries.
   - DIR which is a file containing a directory listing of filenames. To create a directory file on a Linux based system, the following command can be used `find . -type f > dir_list`
 
-The type of SBOM to be added is specified using the `--type` parameter. A SPDX tag/value file will be generated, if required, for each SBOM file which is added to the repository.
+The type of SBOM to be added is specified using the `--type` parameter. JSON formatted SBOMs should have a `.json` file extension.
+
+A SPDX tag/value file will be generated, if required, for each SBOM file which is added to the repository.
 
 The `--project` parameter is intended to be used to allow for filtering of SBOMs when querying for data. 
 
