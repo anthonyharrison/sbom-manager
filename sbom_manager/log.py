@@ -15,6 +15,7 @@ class LevelFilter(logging.Filter):
     def filter(self, record):
         return record.levelno < self.level
 
+
 logging.basicConfig(
     level="INFO",
     format="%(asctime)s %(levelname)-8s %(name)s - %(message)s",

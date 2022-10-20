@@ -112,7 +112,7 @@ class SBOMDB:
         VALUES (?, ?, ?, ?, ?)
         """
         update_file_entry = """
-        UPDATE sbom_file 
+        UPDATE sbom_file
         SET record_count = ?
         WHERE file_id = ?
         """
@@ -153,7 +153,7 @@ class SBOMDB:
             )
             record_count = record_count + 1
         update_params = [record_count, file_id]
-        cursor.execute(update_file_entry, update_params)        
+        cursor.execute(update_file_entry, update_params)
         self.connection.commit()
         self.db_close()
         self.audit_record("add")
@@ -185,7 +185,8 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT filename, project, description, sbom_type, record_count, add_date FROM sbom_file
+        SELECT filename, project, description, sbom_type,
+        record_count, add_date FROM sbom_file
         """
         list_module = """
         SELECT product, version FROM sbom_data

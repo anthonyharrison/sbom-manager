@@ -31,7 +31,7 @@ class SBOMScanner:
 
     def scan(self):
         LOGGER.info(f"Scan {self.filename} for vulnerabilities")
-        if len(self.options) > 0 and 'application' in self.options:
+        if len(self.options) > 0 and "application" in self.options:
             command_line = f"{self.options['application']} {self.options['options']} "
             command_line = command_line + f"{self.filename}"
             LOGGER.info(command_line)

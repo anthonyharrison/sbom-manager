@@ -23,10 +23,10 @@ class SBOMStore:
         self.location = DISK_LOCATION_DEFAULT
         if len(disk_location) > 0:
             # User specified storage location
-            self.location = disk_location['location']
+            self.location = disk_location["location"]
         LOGGER.debug(f"Storage location: {self.location}")
 
-    def store(self, filename, project, delete = False):
+    def store(self, filename, project, delete=False):
         # Check project store exists. If not create it
         project_location = os.path.join(self.location, project)
         if not os.path.isdir(project_location):
@@ -56,7 +56,7 @@ class SBOMStore:
         for file_path in os.listdir(project_location):
             LOGGER.debug(f"Processing file {file_path}")
             # Ignore . files
-            if not file_path.startswith('.'):
+            if not file_path.startswith("."):
                 project_list.append(file_path)
         # Return list of files
         return project_list
@@ -66,7 +66,6 @@ class SBOMStore:
             full_path = os.path.join(self.location, file_path)
             LOGGER.debug(f"Processing file {file_path} - {os.path.isdir(full_path)}")
             # Ignore . files
-            if not file_path.startswith('.') and os.path.isdir(full_path):
+            if not file_path.startswith(".") and os.path.isdir(full_path):
                 LOGGER.debug(f"Deleting project directory {file_path}")
                 shutil.rmtree(full_path)
-

@@ -7,7 +7,8 @@ from sbom_manager.log import LOGGER
 
 
 class OutputManager:
-    """ Helper class for managing output to file and console. """
+    """Helper class for managing output to file and console."""
+
     def __init__(self, out_type="file", filename=None):
         self.out_type = out_type
         self.filename = filename
@@ -34,7 +35,7 @@ class OutputManager:
 
 
 class SBOMOutput:
-    """ Output manager for SBOM data. """
+    """Output manager for SBOM data."""
 
     WIDTH = 20
     PADDING = " "
