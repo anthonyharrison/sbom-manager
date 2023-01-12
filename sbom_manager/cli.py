@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Anthony Harrison
+# Copyright (C) 2023 Anthony Harrison
 # SPDX-License-Identifier: MIT
 
 """
@@ -12,6 +12,7 @@ import os
 import sys
 import textwrap
 from collections import ChainMap
+from pathlib import Path
 
 from sbom_manager.config import SBOMConfig
 from sbom_manager.db import SBOMDB
@@ -90,6 +91,19 @@ def main(argv=None):
         "-s", "--scan", action="store_true", help="Scan SBOMs for vulnerabilities"
     )
 
+    data_group = parser.add_argument_group("Data")
+    data_group.add_argument(
+        "--export",
+        action="store",
+        help="export database filename",
+        default="",
+    )
+    data_group.add_argument(
+        "--import",
+        action="store",
+        help="import database filename",
+        default="",
+    )
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
         "-q", "--quiet", action="store_true", help="Suppress output"
@@ -135,6 +149,8 @@ def main(argv=None):
         "output_file": "console",
         "initialise": False,
         "scan": False,
+        "import": "",
+        "export": "",
     }
 
     raw_args = parser.parse_args(argv[1:])
@@ -156,6 +172,18 @@ def main(argv=None):
 
     # Connect to the database
     sbom_db = SBOMDB()
+
+    # Import database if file exists
+    if args["import"] and Path(args["import"]).exists():
+        LOGGER.info(f'Import database from {args["import"]}')
+        sbom_db.copy_db(filename=args["import"], export=False)
+
+    # Export database if database exists
+    if args["export"] and sbom_db.check_db_exists():
+        LOGGER.info(f'Export database to {args["export"]}')
+        sbom_db.copy_db(filename=args["export"], export=True)
+        # And terminate operation
+        return 0
 
     # Add Input validation
     if args["add_file"] and not args["description"]:

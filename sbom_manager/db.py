@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Anthony Harrison
+# Copyright (C) 2023 Anthony Harrison
 # SPDX-License-Identifier: MIT
 
 """
@@ -8,6 +8,7 @@ Management of access to database
 import datetime
 import logging
 import os
+import shutil
 import sqlite3
 
 from sbom_manager.log import LOGGER
@@ -228,6 +229,9 @@ class SBOMDB:
         self.audit_record("list")
         return results
 
+    def check_db_exists(self):
+        return os.path.isfile(self.dbpath)
+
     def db_open(self):
         """Opens connection to sqlite database."""
         if not os.path.exists(DISK_LOCATION_DEFAULT):
@@ -243,3 +247,14 @@ class SBOMDB:
             self.connection.close()
             self.connection = None
             LOGGER.debug("Database closed")
+
+    def copy_db(self, filename, export=True):
+        self.db_close()
+        if export:
+            self.audit_record("Export database")
+            LOGGER.debug(f"Database export to {filename}")
+            shutil.copy(self.dbpath, filename)
+        else:
+            self.audit_record("Import database")
+            LOGGER.debug(f"Database import from {filename}")
+            shutil.copy(filename, self.dbpath)
