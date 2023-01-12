@@ -56,6 +56,7 @@ class SBOMDB:
             vendor TEXT,
             product TEXT,
             version TEXT,
+            license TEXT,
             FOREIGN KEY(file_id) REFERENCES sbom_file(file_id)
         )
         """
@@ -122,9 +123,10 @@ class SBOMDB:
             file_id,
             vendor,
             product,
-            version
+            version,
+            license
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
         """
         # Insert file entry
         cursor.execute(
@@ -142,6 +144,9 @@ class SBOMDB:
         # Insert SBOM data records. Maintain count of records inserted
         record_count = 0
         for data in sbom_data:
+            license = data["license"]
+            if license == "":
+                license = "NOASSERTION"
             # Make sure all entries are lowercase
             cursor.execute(
                 insert_sbom,
@@ -150,6 +155,7 @@ class SBOMDB:
                     data["vendor"].lower(),
                     data["product"].lower(),
                     data["version"].lower(),
+                    license,
                 ],
             )
             record_count = record_count + 1
@@ -164,7 +170,7 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         find_module_query = """
-        SELECT filename, project, description, product, version
+        SELECT filename, project, description, product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
         """
@@ -190,15 +196,15 @@ class SBOMDB:
         record_count, add_date FROM sbom_file
         """
         list_module = """
-        SELECT product, version FROM sbom_data
+        SELECT product, version, license FROM sbom_data
         """
         list_project_module = """
-        SELECT product, version
+        SELECT product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
         list_all = """
-        SELECT filename, project, description, product, version
+        SELECT filename, project, description, product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
@@ -230,7 +236,7 @@ class SBOMDB:
         return results
 
     def check_db_exists(self):
-        return os.path.isfile(self.dbpath)
+        return os.path.isfile(self.dbpath) and (os.path.getsize(self.dbpath) > 100)
 
     def db_open(self):
         """Opens connection to sqlite database."""

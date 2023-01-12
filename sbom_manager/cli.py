@@ -178,13 +178,6 @@ def main(argv=None):
         LOGGER.info(f'Import database from {args["import"]}')
         sbom_db.copy_db(filename=args["import"], export=False)
 
-    # Export database if database exists
-    if args["export"] and sbom_db.check_db_exists():
-        LOGGER.info(f'Export database to {args["export"]}')
-        sbom_db.copy_db(filename=args["export"], export=True)
-        # And terminate operation
-        return 0
-
     # Add Input validation
     if args["add_file"] and not args["description"]:
         desc = "Not specified"
@@ -219,6 +212,11 @@ def main(argv=None):
         LOGGER.debug("Initialise system")
         sbom_db.initialise_database()
         sbom_store.initialise_store()
+    elif args["export"] and sbom_db.check_db_exists():
+        LOGGER.info(f'Export database to {args["export"]}')
+        sbom_db.copy_db(filename=args["export"], export=True)
+    elif not sbom_db.check_db_exists():
+        LOGGER.error("Database not setup. Please enter sbom-manager --init before proceeding")
     elif args["add_file"]:
         # Process SBOM file
         LOGGER.debug(f"Add SBOM {args['add_file']}")
@@ -247,7 +245,7 @@ def main(argv=None):
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
         sbom_output.set_headings(
-            ["SBOM", "Project", "Description", "Product", "Version"]
+            ["SBOM", "Project", "Description", "Product", "Version", "License"]
         )
         sbom_output.generate_output(
             sbom_db.find_module(args["module"], args["project"])
@@ -267,10 +265,10 @@ def main(argv=None):
                 ]
             )
         elif args["list"] == "module":
-            sbom_output.set_headings(["Product", "Version"])
+            sbom_output.set_headings(["Product", "Version", "License"])
         else:
             sbom_output.set_headings(
-                ["SBOM", "Project", "Description", "Product", "Version"]
+                ["SBOM", "Project", "Description", "Product", "Version", "License"]
             )
         sbom_output.generate_output(sbom_db.list_entries(args["list"], args["project"]))
     elif args["scan"]:
