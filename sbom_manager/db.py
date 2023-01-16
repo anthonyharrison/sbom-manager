@@ -106,12 +106,13 @@ class SBOMDB:
         insert_file = """
         INSERT or REPLACE INTO sbom_file(
             filename,
+            file_version,
             project,
             description,
             sbom_type,
             add_date
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         """
         update_file_entry = """
         UPDATE sbom_file
@@ -128,11 +129,24 @@ class SBOMDB:
         )
         VALUES (?, ?, ?, ?, ?)
         """
+        find_project = """
+        SELECT count(project) FROM sbom_file
+        WHERE project = ?
+        """
+        # Find project
+        cursor.execute(
+            find_project,
+            [
+                project
+            ]
+        )
+        file_version = cursor.fetchone()
         # Insert file entry
         cursor.execute(
             insert_file,
             [
                 os.path.basename(filename),
+                file_version[0]+1,
                 project,
                 description,
                 sbom_type,
@@ -165,16 +179,24 @@ class SBOMDB:
         self.db_close()
         self.audit_record("add")
 
-    def find_module(self, module, project):
+    def find_module(self, module, project, history = False):
         """Function that searches for module in database"""
         self.db_open()
         cursor = self.connection.cursor()
-        find_module_query = """
-        SELECT filename, project, description, product, version, license
+        find_module = """
+        SELECT filename, project as P, description, product, version, license
+        FROM sbom_file, sbom_data
+        WHERE sbom_file.file_id = sbom_data.file_id
+        AND file_version = (select max(file_version) from sbom_file where project = P)
+        AND product LIKE ?
+        """
+        find_module_history = """
+        SELECT filename, file_version, project, description, product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
         """
-        order_query = " ORDER BY product ASC"
+        find_module_query = find_module_history if history else find_module
+        order_query = " ORDER BY product ASC, project ASC, file_version DESC"
         query_params = ["%" + module + "%"]
         # Handle optional project parameter
         if project != "":
@@ -187,43 +209,60 @@ class SBOMDB:
         self.audit_record("find")
         return results
 
-    def list_entries(self, contents, project):
+    def list_entries(self, contents, project, history = False):
         """Function that extracts entries from database"""
         self.db_open()
         cursor = self.connection.cursor()
         list_sbom = """
-        SELECT filename, project, description, sbom_type,
+        SELECT filename, project as P, description, sbom_type,
         record_count, add_date FROM sbom_file
         """
-        list_module = """
-        SELECT product, version, license FROM sbom_data
+        list_sbom_history = """
+        SELECT filename, file_version, project as P, description, sbom_type,
+        record_count, add_date FROM sbom_file
         """
         list_project_module = """
-        SELECT product, version, license
+        SELECT project as P, product, version, license
+        FROM sbom_file, sbom_data
+        WHERE sbom_file.file_id = sbom_data.file_id
+        """
+        list_project_module_history = """
+        SELECT project as P, file_version, product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
         list_all = """
-        SELECT filename, project, description, product, version, license
+        SELECT filename, project as P, description, product, version, license
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
+        list_all_history = """
+        SELECT filename, file_version, project as P, description, product, version, license
+        FROM sbom_file, sbom_data
+        WHERE sbom_file.file_id = sbom_data.file_id
+        """
+        latest_all = """
+        file_version = (select max(file_version) from sbom_file where project = P)
+        """
+        # latest_query = latest_project if project else latest_all
+        latest_query = latest_all
         if contents == "sbom":
-            list_query = list_sbom
+            list_query = list_sbom_history if history else list_sbom
             list_query_prefix = " WHERE"
-            order_query = " ORDER BY project ASC"
+            order_query = " ORDER BY project ASC, file_version DESC"
         elif contents == "module":
-            list_query = list_module
-            list_query_prefix = " WHERE"
-            if project != "":
-                list_query = list_project_module
-                list_query_prefix = " AND"
-            order_query = " ORDER BY product ASC"
+            list_query = list_project_module_history if history else list_project_module
+            list_query_prefix = " AND "
+            order_query = " ORDER BY product ASC, project ASC, file_version DESC"
         else:
-            list_query = list_all
+            list_query = list_all_history if history else list_all
             list_query_prefix = " AND"
-            order_query = " ORDER BY project ASC"
+            order_query = " ORDER BY project ASC, file_version DESC"
         query_params = []
+        # Handle history parameter
+        if not history:
+            list_query= list_query + list_query_prefix + latest_all
+            list_query_prefix = " AND"
         # Handle optional project parameter
         if project != "":
             query_params.append(project)

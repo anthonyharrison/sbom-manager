@@ -31,8 +31,8 @@ up for testing using different versions of Python.
 ```
 sbom-manager [-h] [-I] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
                 [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
-                [-p PROJECT] [-s] [--export EXPORT] [--import IMPORT] [-q]
-                [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
+                [-p PROJECT] [-s] [--history] [--export EXPORT] [--import IMPORT]
+                [-q] [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
                 [-f {csv,console}] [-C CONFIG] [-V]
 ```
 
@@ -58,6 +58,8 @@ Input:
   -p PROJECT, --project PROJECT
                         Project name
   -s, --scan            Scan SBOMs for vulnerabilities
+  --history             Include file history
+
 
 Data:
   --export EXPORT       export database filename
@@ -86,7 +88,7 @@ You can also use this command if the repository needs to be reset, e.g. followin
 
 Once a repository is created, SBOM files can be added. The following types of SBOMs are supported:
 
-  - SPDX (Tag/Value format or JSON format compatible with version SPDX 2.2).
+  - SPDX (Tag/Value format or JSON format compatible with version SPDX 2.3).
   - CycloneDX (XML format or JSON format compatible with CycloneDX version 1.4).
   - CSV where the file is a set of lines containing vendor, product, version entries.
   - DIR which is a file containing a directory listing of filenames. To create a directory file on a Linux based system, the following command can be used `find . -type f > dir_list`
@@ -105,7 +107,8 @@ Invalid entries in an SBOM file will be silently ignored although specifying `--
 The `--module` option is used to query the repostory for the existence of a particular module. This may optionally be filtered by project name. The
 name of the module is assumed to be wildcard so that a search for a module called 'lib' will find all modules which contain the sequence 'lib'.
 
-The `--list` option is used to report the contents of the repository. 
+The `--list` option is used to report the contents of the repository. The default behaviour is to just show the latest updates for
+the specified SBOMs or module. The `--history` option can be used to show all of the updates.
 
 The `--config` option is used to specify the [configuration file](#configuration-file) to be used. This is required when the  `--scan` is specified.
 
@@ -118,6 +121,7 @@ default is to report to the console but can be stored in a file (specified using
 the `--format` option which may be useful if the output is to be used as an input by another tool.
 
 The `--export` and `--import` options can be used to archive a copy of the repository or to restore a repository,
+
 
 ## Configuration File
 
