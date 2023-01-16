@@ -42,7 +42,7 @@ class SBOMDB:
         CREATE TABLE sbom_file (
             file_id INTEGER PRIMARY KEY,
             filename TEXT NOT NULL,
-            file_version TEXT,
+            file_version INTEGER,
             project TEXT,
             description TEXT,
             sbom_type TEXT,
@@ -178,6 +178,7 @@ class SBOMDB:
         self.connection.commit()
         self.db_close()
         self.audit_record("add")
+        return file_version[0]+1
 
     def find_module(self, module, project, history = False):
         """Function that searches for module in database"""

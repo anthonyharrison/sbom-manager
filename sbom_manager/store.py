@@ -26,14 +26,16 @@ class SBOMStore:
             self.location = disk_location["location"]
         LOGGER.debug(f"Storage location: {self.location}")
 
-    def store(self, filename, project, delete=False):
+    def store(self, filename, project, delete=False, version=1):
         # Check project store exists. If not create it
         project_location = os.path.join(self.location, project)
         if not os.path.isdir(project_location):
             LOGGER.debug(f"Creating file store for {project}")
             os.mkdir(project_location)
         LOGGER.debug(f"Copying {filename} to store")
-        shutil.copy(filename, project_location)
+        dest_file = f"{version}_{os.path.basename(filename)}"
+        destination = os.path.join(project_location, dest_file)
+        shutil.copy(filename, destination)
         if delete:
             LOGGER.debug(f"Deleting {filename}")
             os.remove(filename)
@@ -53,7 +55,9 @@ class SBOMStore:
             LOGGER.debug(f"No files for {project}")
             return []
         project_list = []
-        for file_path in os.listdir(project_location):
+        # Get list of files (most recent first). Must be in directory for sort to work.
+        os.chdir(project_location)
+        for file_path in sorted(os.listdir("."), key=os.path.getmtime, reverse=True):
             LOGGER.debug(f"Processing file {file_path}")
             # Ignore . files
             if not file_path.startswith("."):

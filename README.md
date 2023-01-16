@@ -95,8 +95,6 @@ Once a repository is created, SBOM files can be added. The following types of SB
 
 The type of SBOM to be added is specified using the `--type` parameter. JSON formatted SBOMs should have a `.json` file extension.
 
-A SPDX tag/value file will be generated, if required, for each SBOM file which is added to the repository.
-
 The `--project` parameter is intended to be used to allow for filtering of SBOMs when querying for data. 
 
 If the `--description` parameter is not specified when adding SBOM files, a default value of 'Not Specified' is assumed. This parameter is typically
@@ -108,7 +106,7 @@ The `--module` option is used to query the repostory for the existence of a part
 name of the module is assumed to be wildcard so that a search for a module called 'lib' will find all modules which contain the sequence 'lib'.
 
 The `--list` option is used to report the contents of the repository. The default behaviour is to just show the latest updates for
-the specified SBOMs or module. The `--history` option can be used to show all of the updates.
+the specified SBOMs or module. The `--history` option can be used to show all updates.
 
 The `--config` option is used to specify the [configuration file](#configuration-file) to be used. This is required when the  `--scan` is specified.
 

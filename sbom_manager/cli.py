@@ -227,24 +227,12 @@ def main(argv=None):
         sbom_data = sbom_input.process_file(args["add_file"])
         if sbom_data is not None:
             # Add entry to database
-            sbom_db.add_file(
+            version = sbom_db.add_file(
                 args["add_file"], desc, args["project"], args["sbom_type"], sbom_data
             )
             # And store file
             LOGGER.debug(f"Store {args['add_file']}")
-            sbom_store.store(args["add_file"], args["project"])
-            if args["sbom_type"] != "spdx":
-                # Generate SPDX format file
-                sbom_gen = SBOMGenerator()
-                sbom_gen.generate_spdx(args["project"], sbom_data)
-                spdx_filename = (
-                    os.path.splitext(os.path.basename(args["add_file"]))[0] + ".spdx"
-                )
-                spdx_filegen = OutputManager("file", spdx_filename)
-                for line in sbom_gen.get_spdx():
-                    spdx_filegen.file_out(line)
-                spdx_filegen.close()
-                sbom_store.store(spdx_filename, args["project"], delete=True)
+            sbom_store.store(args["add_file"], args["project"], version=version)
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")

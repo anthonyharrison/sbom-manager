@@ -60,8 +60,8 @@ class SBOMOutput:
 
     def format_element(self, element):
         # If element larger than maximum width, curtail element and add '...'
-        if len(element) > self.WIDTH:
-            return element[: self.WIDTH - 3] + "..."
+        if len(str(element)) > self.WIDTH:
+            return str(element)[: self.WIDTH - 3] + "..."
         return element
 
     def format_data(self, data):
