@@ -238,7 +238,7 @@ def main(argv=None):
         LOGGER.debug(f"Search for module {args['module']}")
         if args["history"]:
             sbom_output.set_headings(
-                ["SBOM", "File Version", "Project", "Description", "Product", "Version", "License"]
+                ["SBOM", "SBOM Version", "Project", "Description", "Product", "Version", "License"]
             )
         else:
             sbom_output.set_headings(
@@ -255,7 +255,7 @@ def main(argv=None):
                 sbom_output.set_headings(
                     [
                         "SBOM",
-                        "File Version",
+                        "SBOM Version",
                         "Project",
                         "Description",
                         "SBOM Type",
@@ -282,7 +282,7 @@ def main(argv=None):
         else:
             if args["history"]:
                 sbom_output.set_headings(
-                    ["SBOM", "File Version", "Project", "Description", "Product", "Version", "License"]
+                    ["SBOM", "SBOM Version", "Project", "Description", "Product", "Version", "License"]
                 )
             else:
                 sbom_output.set_headings(

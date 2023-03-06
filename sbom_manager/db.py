@@ -210,7 +210,7 @@ class SBOMDB:
         self.audit_record("find")
         return results
 
-    def list_entries(self, contents, project, history = False):
+    def list_entries(self, contents, project, history = False, version = None):
         """Function that extracts entries from database"""
         self.db_open()
         cursor = self.connection.cursor()
@@ -261,13 +261,16 @@ class SBOMDB:
             order_query = " ORDER BY project ASC, file_version DESC"
         query_params = []
         # Handle history parameter
-        if not history:
+        if not history and version is None:
             list_query= list_query + list_query_prefix + latest_all
             list_query_prefix = " AND"
         # Handle optional project parameter
         if project != "":
             query_params.append(project)
             list_query = list_query + list_query_prefix + " project = ?"
+        if version is not None:
+            query_params.append(version)
+            list_query = list_query + list_query_prefix + " file_version = ?"
         LOGGER.debug(f"Query: {list_query}{order_query} {query_params}")
         cursor.execute(list_query + order_query, query_params)
         results = cursor.fetchall()
