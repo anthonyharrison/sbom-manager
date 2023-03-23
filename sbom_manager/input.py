@@ -133,13 +133,18 @@ class SBOMInput:
                 elif "evidence" in d and len(d["evidence"]["licenses"]) > 0:
                     license_data = d["evidence"]["licenses"][0]
                 if license_data is not None:
+                    license = None
                     if "license" in license_data:
                         if "id" in license_data["license"]:
                             license = license_data["license"]["id"]
                         elif "name" in license_data["license"]:
                             license = license_data["license"]["name"]
+                        elif "expression" in license_data["license"]:
+                            license = license_data["license"]["expression"]
                     elif "expression" in license_data:
                         license = license_data["expression"]
+                    if license is None:
+                        license = "UNKNOWN"
                 modules.append({"vendor": vendor, "product": product, "version": version, "license": license})
                 LOGGER.debug(f"Add {product} {version}")
         return modules
