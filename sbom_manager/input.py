@@ -44,23 +44,39 @@ class SBOMInput:
             lines = spdx_file.readlines()
         product = ""
         vendor = ""
+        license = ""
+        version = ""
         for line in lines:
             line_elements = line.split(":")
             if line_elements[0] == "PackageName":
                 if product != "" and version != "":
-                    modules.append({"vendor": vendor, "product": product, "version": version, "license": license})
+                    modules.append(
+                        {
+                            "vendor": vendor,
+                            "product": product,
+                            "version": version,
+                            "license": license,
+                        }
+                    )
                     LOGGER.debug(f"Add {product} {version}")
                 product = line_elements[1].strip().rstrip("\n")
                 version = ""
                 license = ""
-            if line_elements[0] == "PackageVersion":
+            elif line_elements[0] == "PackageVersion":
                 version = line_elements[1].strip().rstrip("\n")
                 version = version.split("-")[0]
                 version = version.split("+")[0]
-            if line_elements[0] == "PackageLicenseConcluded":
+            elif line_elements[0] == "PackageLicenseConcluded":
                 license = line_elements[1].strip().rstrip("\n")
         if product != "" and version != "":
-            modules.append({"vendor": vendor, "product": product, "version": version, "license": license})
+            modules.append(
+                {
+                    "vendor": vendor,
+                    "product": product,
+                    "version": version,
+                    "license": license,
+                }
+            )
             LOGGER.debug(f"Add {product} {version}")
         return modules
 
@@ -72,8 +88,15 @@ class SBOMInput:
             product = d["name"]
             version = d["versionInfo"]
             vendor = ""
-            license = d.get("licenseConcluded","")
-            modules.append({"vendor": vendor, "product": product, "version": version, "license": license})
+            license = d.get("licenseConcluded", "")
+            modules.append(
+                {
+                    "vendor": vendor,
+                    "product": product,
+                    "version": version,
+                    "license": license,
+                }
+            )
             LOGGER.debug(f"Add {product} {version}")
         return modules
 
@@ -145,7 +168,14 @@ class SBOMInput:
                         license = license_data["expression"]
                     if license is None:
                         license = "UNKNOWN"
-                modules.append({"vendor": vendor, "product": product, "version": version, "license": license})
+                modules.append(
+                    {
+                        "vendor": vendor,
+                        "product": product,
+                        "version": version,
+                        "license": license,
+                    }
+                )
                 LOGGER.debug(f"Add {product} {version}")
         return modules
 
@@ -165,7 +195,7 @@ class SBOMInput:
                             "vendor": line_elements[0].strip(),
                             "product": line_elements[1].strip(),
                             "version": line_elements[2].strip(),
-                            "licnese": "",
+                            "license": "",
                         }
                     )
                     LOGGER.debug(
@@ -197,7 +227,7 @@ class SBOMInput:
                             "vendor": "",
                             "product": product.strip(),
                             "version": version.strip(),
-                            "license" : "",
+                            "license": "",
                         }
                         # Ensure that entry not duplicated
                         if new_module not in modules:

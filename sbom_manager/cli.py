@@ -16,10 +16,9 @@ from pathlib import Path
 
 from sbom_manager.config import SBOMConfig
 from sbom_manager.db import SBOMDB
-from sbom_manager.generate import SBOMGenerator
 from sbom_manager.input import SBOMInput
 from sbom_manager.log import LOGGER
-from sbom_manager.output import OutputManager, SBOMOutput
+from sbom_manager.output import SBOMOutput
 from sbom_manager.scan import SBOMScanner
 from sbom_manager.store import SBOMStore
 from sbom_manager.version import VERSION
@@ -220,7 +219,9 @@ def main(argv=None):
         LOGGER.info(f'Export database to {args["export"]}')
         sbom_db.copy_db(filename=args["export"], export=True)
     elif not sbom_db.check_db_exists():
-        LOGGER.error("Database not setup. Please enter sbom-manager --init before proceeding")
+        LOGGER.error(
+            "Database not setup. Please enter sbom-manager --init before proceeding"
+        )
     elif args["add_file"]:
         # Process SBOM file
         LOGGER.debug(f"Add SBOM {args['add_file']}")
@@ -238,12 +239,20 @@ def main(argv=None):
         LOGGER.debug(f"Search for module {args['module']}")
         if args["history"]:
             sbom_output.set_headings(
-                ["SBOM", "SBOM Version", "Project", "Description", "Product", "Version", "License"]
+                [
+                    "SBOM",
+                    "SBOM Version",
+                    "Project",
+                    "Description",
+                    "Product",
+                    "Version",
+                    "License",
+                ]
             )
         else:
             sbom_output.set_headings(
-            ["SBOM", "Project", "Description", "Product", "Version", "License"]
-        )
+                ["SBOM", "Project", "Description", "Product", "Version", "License"]
+            )
         sbom_output.generate_output(
             sbom_db.find_module(args["module"], args["project"], args["history"])
         )
@@ -276,19 +285,31 @@ def main(argv=None):
                 )
         elif args["list"] == "module":
             if args["history"]:
-                sbom_output.set_headings(["Project", "file Version", "Product", "Version", "License"])
+                sbom_output.set_headings(
+                    ["Project", "file Version", "Product", "Version", "License"]
+                )
             else:
                 sbom_output.set_headings(["Project", "Product", "Version", "License"])
         else:
             if args["history"]:
                 sbom_output.set_headings(
-                    ["SBOM", "SBOM Version", "Project", "Description", "Product", "Version", "License"]
+                    [
+                        "SBOM",
+                        "SBOM Version",
+                        "Project",
+                        "Description",
+                        "Product",
+                        "Version",
+                        "License",
+                    ]
                 )
             else:
                 sbom_output.set_headings(
                     ["SBOM", "Project", "Description", "Product", "Version", "License"]
                 )
-        sbom_output.generate_output(sbom_db.list_entries(args["list"], args["project"], args["history"]))
+        sbom_output.generate_output(
+            sbom_db.list_entries(args["list"], args["project"], args["history"])
+        )
     elif args["scan"]:
         # Scan for vulnerabilities
         LOGGER.info("Scan system for vulnerabilities")

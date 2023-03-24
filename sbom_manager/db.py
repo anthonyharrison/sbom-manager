@@ -134,19 +134,14 @@ class SBOMDB:
         WHERE project = ?
         """
         # Find project
-        cursor.execute(
-            find_project,
-            [
-                project
-            ]
-        )
+        cursor.execute(find_project, [project])
         file_version = cursor.fetchone()
         # Insert file entry
         cursor.execute(
             insert_file,
             [
                 os.path.basename(filename),
-                file_version[0]+1,
+                file_version[0] + 1,
                 project,
                 description,
                 sbom_type,
@@ -178,9 +173,9 @@ class SBOMDB:
         self.connection.commit()
         self.db_close()
         self.audit_record("add")
-        return file_version[0]+1
+        return file_version[0] + 1
 
-    def find_module(self, module, project, history = False):
+    def find_module(self, module, project, history=False):
         """Function that searches for module in database"""
         self.db_open()
         cursor = self.connection.cursor()
@@ -210,7 +205,7 @@ class SBOMDB:
         self.audit_record("find")
         return results
 
-    def list_entries(self, contents, project, history = False, version = None):
+    def list_entries(self, contents, project, history=False, version=None):
         """Function that extracts entries from database"""
         self.db_open()
         cursor = self.connection.cursor()
@@ -245,8 +240,6 @@ class SBOMDB:
         latest_all = """
         file_version = (select max(file_version) from sbom_file where project = P)
         """
-        # latest_query = latest_project if project else latest_all
-        latest_query = latest_all
         if contents == "sbom":
             list_query = list_sbom_history if history else list_sbom
             list_query_prefix = " WHERE"
@@ -262,7 +255,7 @@ class SBOMDB:
         query_params = []
         # Handle history parameter
         if not history and version is None:
-            list_query= list_query + list_query_prefix + latest_all
+            list_query = list_query + list_query_prefix + latest_all
             list_query_prefix = " AND"
         # Handle optional project parameter
         if project != "":
