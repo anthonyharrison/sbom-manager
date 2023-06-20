@@ -6,7 +6,7 @@ The SBOM Manager is a free, open source tool to help manage a collection of SBOM
 The tool has two modes of operation:
 
 1. A repository which maintains the set of components which have been included as part of a release or build of a software product.
-2. Tools for quering the inclusion of specific products in a project development to answer some commmon use cases.
+2. Tools for querying the inclusion of specific products in a project development to answer some common use cases.
 
 It is intended to be used as part of a continuous integration system to enable regular records of SBOMs to be maintained 
 and also to support security audit needs to determine if a particular component (and version) has been used.
