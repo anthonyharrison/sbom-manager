@@ -57,6 +57,7 @@ class SBOMDB:
             product TEXT,
             version TEXT,
             license TEXT,
+            type TEXT,
             FOREIGN KEY(file_id) REFERENCES sbom_file(file_id)
         )
         """
@@ -125,9 +126,10 @@ class SBOMDB:
             vendor,
             product,
             version,
-            license
+            license,
+            type
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         """
         find_project = """
         SELECT count(project) FROM sbom_file
@@ -156,6 +158,7 @@ class SBOMDB:
             license = data["license"]
             if license == "":
                 license = "NOASSERTION"
+            type = data["type"]
             # Make sure all entries are lowercase
             cursor.execute(
                 insert_sbom,
@@ -165,6 +168,7 @@ class SBOMDB:
                     data["product"].lower(),
                     data["version"].lower(),
                     license,
+                    type,
                 ],
             )
             record_count = record_count + 1
@@ -180,14 +184,14 @@ class SBOMDB:
         self.db_open()
         cursor = self.connection.cursor()
         find_module = """
-        SELECT filename, project as P, description, product, version, license
+        SELECT filename, project as P, description, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         AND file_version = (select max(file_version) from sbom_file where project = P)
         AND product LIKE ?
         """
         find_module_history = """
-        SELECT filename, file_version, project, description, product, version, license
+        SELECT filename, file_version, project, description, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id AND product LIKE ?
         """
@@ -218,22 +222,22 @@ class SBOMDB:
         record_count, add_date FROM sbom_file
         """
         list_project_module = """
-        SELECT project as P, product, version, license
+        SELECT project as P, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
         list_project_module_history = """
-        SELECT project as P, file_version, product, version, license
+        SELECT project as P, file_version, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
         list_all = """
-        SELECT filename, project as P, description, product, version, license
+        SELECT filename, project as P, description, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """
         list_all_history = """
-        SELECT filename, file_version, project as P, description, product, version, license
+        SELECT filename, file_version, project as P, description, product, version, license, type
         FROM sbom_file, sbom_data
         WHERE sbom_file.file_id = sbom_data.file_id
         """

@@ -68,11 +68,15 @@ class SBOMOutput:
         # Return formatted line
         formatted_data = ""
         for entry in data:
-            formatted_data = (
-                formatted_data
-                + f"{self.format_element(entry) :{self.PADDING}<{self.WIDTH}}"
-                + " "
-            )
+            if entry is not None:
+                formatted_data = (
+                    formatted_data
+                    + f"{self.format_element(entry) :{self.PADDING}<{self.WIDTH}}"
+                    + " "
+                )
+            else:
+                space = " "
+                formatted_data = formatted_data + f"{space :{self.PADDING}<{self.WIDTH}}" + " "
         return formatted_data
 
     def format_csv_data(self, data):

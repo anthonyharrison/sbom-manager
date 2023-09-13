@@ -59,7 +59,7 @@ def main(argv=None):
         "-t",
         "--sbom-type",
         action="store",
-        choices=["spdx", "cyclonedx", "csv", "dir"],
+        choices=["spdx", "cyclonedx", "csv", "dir", "auto"],
         help="SBOM file type",
     )
     input_group.add_argument(
@@ -225,11 +225,11 @@ def main(argv=None):
     elif args["add_file"]:
         # Process SBOM file
         LOGGER.debug(f"Add SBOM {args['add_file']}")
-        sbom_data = sbom_input.process_file(args["add_file"])
+        sbom_data, sbom_type = sbom_input.process_file(args["add_file"])
         if sbom_data is not None:
             # Add entry to database
             version = sbom_db.add_file(
-                args["add_file"], desc, args["project"], args["sbom_type"], sbom_data
+                args["add_file"], desc, args["project"], sbom_type, sbom_data
             )
             # And store file
             LOGGER.debug(f"Store {args['add_file']}")
@@ -247,11 +247,12 @@ def main(argv=None):
                     "Product",
                     "Version",
                     "License",
+                    "Type",
                 ]
             )
         else:
             sbom_output.set_headings(
-                ["SBOM", "Project", "Description", "Product", "Version", "License"]
+                ["SBOM", "Project", "Description", "Product", "Version", "License", "Type"]
             )
         sbom_output.generate_output(
             sbom_db.find_module(args["module"], args["project"], args["history"])
@@ -286,10 +287,10 @@ def main(argv=None):
         elif args["list"] == "module":
             if args["history"]:
                 sbom_output.set_headings(
-                    ["Project", "file Version", "Product", "Version", "License"]
+                    ["Project", "file Version", "Product", "Version", "License", "Type"]
                 )
             else:
-                sbom_output.set_headings(["Project", "Product", "Version", "License"])
+                sbom_output.set_headings(["Project", "Product", "Version", "License", "Type"])
         else:
             if args["history"]:
                 sbom_output.set_headings(
@@ -301,11 +302,12 @@ def main(argv=None):
                         "Product",
                         "Version",
                         "License",
+                        "Type",
                     ]
                 )
             else:
                 sbom_output.set_headings(
-                    ["SBOM", "Project", "Description", "Product", "Version", "License"]
+                    ["SBOM", "Project", "Description", "Product", "Version", "License", "Type"]
                 )
         sbom_output.generate_output(
             sbom_db.list_entries(args["list"], args["project"], args["history"])
