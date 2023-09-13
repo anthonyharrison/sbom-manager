@@ -29,7 +29,7 @@ up for testing using different versions of Python.
 ## Usage
 
 ```
-sbom-manager [-h] [-I] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir}]
+sbom-manager [-h] [-I] [-a ADD_FILE] [-t {spdx,cyclonedx,csv,dir,auto}]
                 [-l {all,sbom,module}] [-m MODULE] [-d DESCRIPTION]
                 [-p PROJECT] [-s] [--history] [--export EXPORT] [--import IMPORT]
                 [-q] [-L {debug,info,warning,error,critical}] [-o OUTPUT_FILE]
@@ -47,7 +47,7 @@ Input:
   -I, --initialise      Initialise SBOM manager
   -a ADD_FILE, --add ADD_FILE
                         SBOM file to be added
-  -t {spdx,cyclonedx,csv,dir}, --sbom-type {spdx,cyclonedx,csv,dir}
+  -t {spdx,cyclonedx,csv,dir,auto}, --sbom-type {spdx,cyclonedx,csv,dir,auto}
                         SBOM file type
   -l {all,sbom,module}, --list {all,sbom,module}
                         list contents of SBOM
@@ -89,9 +89,10 @@ You can also use this command if the repository needs to be reset, e.g. followin
 Once a repository is created, SBOM files can be added. The following types of SBOMs are supported:
 
   - SPDX (Tag/Value format or JSON format compatible with version SPDX 2.3).
-  - CycloneDX (XML format or JSON format compatible with CycloneDX version 1.4).
+  - CycloneDX (XML format or JSON format compatible with CycloneDX version 1.4 or 1.5).
   - CSV where the file is a set of lines containing vendor, product, version entries.
   - DIR which is a file containing a directory listing of filenames. To create a directory file on a Linux based system, the following command can be used `find . -type f > dir_list`
+  - AUTO which will automatically detect the type of SBOM (SPDX or CycloneDX)
 
 The type of SBOM to be added is specified using the `--type` parameter. JSON formatted SBOMs should have a `.json` file extension.
 

@@ -8,6 +8,8 @@ import os.path
 import re
 
 import defusedxml.ElementTree as ET
+from lib4sbom.parser import SBOMParser
+from lib4sbom.data.document import SBOMDocument
 
 from sbom_manager.log import LOGGER
 
@@ -26,6 +28,7 @@ class SBOMInput:
             "cyclonedx_json": self.process_cyclonedx_json_file,
             "csv": self.process_csv_file,
             "dir": self.process_directory_file,
+            "auto": self.parse_sbom,
         }
         self.logger = LOGGER.getChild(self.__class__.__name__)
 
@@ -34,8 +37,34 @@ class SBOMInput:
         # Only process if file exists
         if os.path.exists(filename):
             LOGGER.debug(f"Processing {filename} - type {self.sbom_type}")
-            sbom_data = self.sbom_process[self.sbom_type](filename)
-        return sbom_data
+            sbom_data, sbom_type = self.sbom_process[self.sbom_type](filename)
+        return sbom_data, sbom_type
+
+    def parse_sbom(self, filename):
+        sbom_parser = SBOMParser()
+        # Load SBOM - will autodetect SBOM type
+        sbom_parser.parse_file(filename)
+        document = SBOMDocument()
+        document.copy_document(sbom_parser.get_document())
+        sbom_type = document.get_type()
+        modules = []
+        for package in sbom_parser.get_packages():
+            product = package.get("name", None)
+            version = package.get("version", None)
+            type = package.get("type", None)
+            vendor = package.get("supplier", None)
+            license = package.get("licenseconcluded", "NOASSERTION")
+            modules.append(
+                {
+                    "vendor": vendor,
+                    "product": product,
+                    "version": version,
+                    "license": license,
+                    "type": type,
+                }
+            )
+            LOGGER.debug(f"Add {product} {version}")
+        return modules, sbom_type
 
     def process_spdx_file(self, filename):
         # Process SPDX Tag file
@@ -46,6 +75,7 @@ class SBOMInput:
         vendor = ""
         license = ""
         version = ""
+        type = ""
         for line in lines:
             line_elements = line.split(":")
             if line_elements[0] == "PackageName":
@@ -56,18 +86,22 @@ class SBOMInput:
                             "product": product,
                             "version": version,
                             "license": license,
+                            "type": type,
                         }
                     )
                     LOGGER.debug(f"Add {product} {version}")
                 product = line_elements[1].strip().rstrip("\n")
                 version = ""
                 license = ""
+                type = ""
             elif line_elements[0] == "PackageVersion":
                 version = line_elements[1].strip().rstrip("\n")
                 version = version.split("-")[0]
                 version = version.split("+")[0]
             elif line_elements[0] == "PackageLicenseConcluded":
                 license = line_elements[1].strip().rstrip("\n")
+            elif line_elements[0] == "PrimaryPackagePurpose":
+                type = line_elements[1].strip().rstrip("\n")
         if product != "" and version != "":
             modules.append(
                 {
@@ -75,10 +109,11 @@ class SBOMInput:
                     "product": product,
                     "version": version,
                     "license": license,
+                    "type": type,
                 }
             )
             LOGGER.debug(f"Add {product} {version}")
-        return modules
+        return modules, "spdx"
 
     def process_spdx_json_file(self, filename):
         # Process SPDX JSON file
@@ -88,6 +123,7 @@ class SBOMInput:
             product = d["name"]
             version = d["versionInfo"]
             vendor = ""
+            type = d.get("primaryPackagePurpose", "")
             license = d.get("licenseConcluded", "")
             modules.append(
                 {
@@ -95,10 +131,11 @@ class SBOMInput:
                     "product": product,
                     "version": version,
                     "license": license,
+                    "type": type
                 }
             )
             LOGGER.debug(f"Add {product} {version}")
-        return modules
+        return modules, "spdx"
 
     def process_cyclonedx_file(self, filename):
         # Process CycloneDX XML BOM file
@@ -117,6 +154,7 @@ class SBOMInput:
                     "application",
                     "operating-system",
                 ]:
+                    type = component.attrib["type"]
                     component_name = component.find(schema + "name")
                     product = component_name.text
                     component_version = component.find(schema + "version")
@@ -134,10 +172,11 @@ class SBOMInput:
                                 "product": product,
                                 "version": version,
                                 "license": license,
+                                "type": type,
                             }
                         )
                         LOGGER.debug(f"Add {product} {version}")
-        return modules
+        return modules, "cyclonedx"
 
     def process_cyclonedx_json_file(self, filename):
         # Process CycloneDX JSON file
@@ -150,6 +189,7 @@ class SBOMInput:
                 license = ""
                 vendor = ""
                 license_data = None
+                type = d.get("type","")
                 # Multiple ways of defining license data
                 if "licenses" in d and len(d["licenses"]) > 0:
                     license_data = d["licenses"][0]
@@ -174,10 +214,11 @@ class SBOMInput:
                         "product": product,
                         "version": version,
                         "license": license,
+                        "type": type,
                     }
                 )
                 LOGGER.debug(f"Add {product} {version}")
-        return modules
+        return modules, "cyclonedx"
 
     def process_csv_file(self, filename):
         # Process CSV file
@@ -196,12 +237,13 @@ class SBOMInput:
                             "product": line_elements[1].strip(),
                             "version": line_elements[2].strip(),
                             "license": "",
+                            "type": "",
                         }
                     )
                     LOGGER.debug(
                         f"Add {line_elements[1].strip()} {line_elements[2].strip()}"
                     )
-        return modules
+        return modules, "csv"
 
     def process_directory_file(self, filename):
         # Process directory file
@@ -228,9 +270,10 @@ class SBOMInput:
                             "product": product.strip(),
                             "version": version.strip(),
                             "license": "",
+                            "type": "",
                         }
                         # Ensure that entry not duplicated
                         if new_module not in modules:
                             modules.append(new_module)
                             LOGGER.debug(f"Add {product} {version}")
-        return modules
+        return modules, "csv"
