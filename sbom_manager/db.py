@@ -179,6 +179,17 @@ class SBOMDB:
         self.audit_record("add")
         return file_version[0] + 1
 
+    def delete_sbom(self, sbom):
+        """Function that removes a sbom from the database"""
+        self.db_open()
+        cursor = self.connection.cursor()
+        delete_sbom = f"DELETE from sbom_file WHERE project='{sbom}'"
+        LOGGER.debug(f"Query: {delete_sbom}")
+        cursor.execute(delete_sbom)
+        self.connection.commit()
+        self.db_close()
+        self.audit_record("delete")
+
     def find_module(self, module, project, history=False):
         """Function that searches for module in database"""
         self.db_open()
