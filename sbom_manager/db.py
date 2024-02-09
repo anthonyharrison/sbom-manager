@@ -183,6 +183,15 @@ class SBOMDB:
         """Function that removes a sbom from the database"""
         self.db_open()
         cursor = self.connection.cursor()
+        # Find project id - there maybe multiple files associated with a single project
+        find_project = f"SELECT file_id from sbom_file where project='{sbom}'"
+        project_id = cursor.execute(find_project).fetchone()[0]
+        # Get project_id from database response
+        #project_id = 1
+        # Delete files associated with project
+        # For each project_id
+        delete_sbom_files = f"DELETE from sbom_data WHERE file_id='{project_id}'"
+        cursor.execute(delete_sbom_files)
         delete_sbom = f"DELETE from sbom_file WHERE project='{sbom}'"
         LOGGER.debug(f"Query: {delete_sbom}")
         cursor.execute(delete_sbom)

@@ -56,6 +56,13 @@ def main(argv=None):
         help="SBOM file to be added",
     )
     input_group.add_argument(
+        "--delete",
+        action="store",
+        default="",
+        dest="delete_project",
+        help="SBOM project to be deleted",
+    )
+    input_group.add_argument(
         "-t",
         "--sbom-type",
         action="store",
@@ -139,6 +146,7 @@ def main(argv=None):
 
     defaults = {
         "add_file": "",
+        "delete_project": "",
         "config": "",
         "sbom_type": "",
         "module": "",
@@ -234,6 +242,10 @@ def main(argv=None):
             # And store file
             LOGGER.debug(f"Store {args['add_file']}")
             sbom_store.store(args["add_file"], args["project"], version=version)
+    elif args["delete_project"]:
+        # Delete SBOM
+        LOGGER.debug(f"Delete SBOM {args['delete_project']}")
+        sbom_db.delete_sbom(args['delete_project'])
     elif args["module"]:
         # Search for module
         LOGGER.debug(f"Search for module {args['module']}")
