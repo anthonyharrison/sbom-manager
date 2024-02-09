@@ -131,7 +131,7 @@ class SBOMInput:
                     "product": product,
                     "version": version,
                     "license": license,
-                    "type": type
+                    "type": type,
                 }
             )
             LOGGER.debug(f"Add {product} {version}")
@@ -185,11 +185,11 @@ class SBOMInput:
         for d in data["components"]:
             if d["type"] in ["application", "library"]:
                 product = d["name"]
-                version = d["version"]
+                version = d["version"] if "version" in d else ""
                 license = ""
                 vendor = ""
                 license_data = None
-                type = d.get("type","")
+                type = d.get("type", "")
                 # Multiple ways of defining license data
                 if "licenses" in d and len(d["licenses"]) > 0:
                     license_data = d["licenses"][0]
