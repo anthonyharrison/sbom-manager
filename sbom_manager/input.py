@@ -189,7 +189,7 @@ class SBOMInput:
                 license = ""
                 vendor = ""
                 license_data = None
-                type = d.get("type","")
+                type = d.get("type", "")
                 # Multiple ways of defining license data
                 if "licenses" in d and len(d["licenses"]) > 0:
                     license_data = d["licenses"][0]
