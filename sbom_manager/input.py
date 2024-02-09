@@ -49,10 +49,10 @@ class SBOMInput:
         sbom_type = document.get_type()
         modules = []
         for package in sbom_parser.get_packages():
-            product = package.get("name", None)
-            version = package.get("version", None)
+            product = package.get("name", "")
+            version = package.get("version", "")
             type = package.get("type", None)
-            vendor = package.get("supplier", None)
+            vendor = package.get("supplier", "")
             license = package.get("licenseconcluded", "NOASSERTION")
             modules.append(
                 {
@@ -131,7 +131,7 @@ class SBOMInput:
                     "product": product,
                     "version": version,
                     "license": license,
-                    "type": type
+                    "type": type,
                 }
             )
             LOGGER.debug(f"Add {product} {version}")
@@ -185,7 +185,7 @@ class SBOMInput:
         for d in data["components"]:
             if d["type"] in ["application", "library"]:
                 product = d["name"]
-                version = d["version"]
+                version = d["version"] if "version" in d else ""
                 license = ""
                 vendor = ""
                 license_data = None
